@@ -8,17 +8,21 @@ struct Map {
     horizontal_walls: FixedBitSet,
     vertical_walls: FixedBitSet,
     holes: FixedBitSet,
-    holes_placement: Vec<(usize, usize)>,
-    width: usize,
-    height: usize,
+    holes_placement: Vec<[Coordinate; 2]>,
+    width: Coordinate,
+    height: Coordinate,
 }
 
 impl Map {
-    pub fn read(width: usize, height: usize, scanner: &mut Scanner<impl std::io::BufRead>) -> Self {
+    pub fn read(
+        width: Coordinate,
+        height: Coordinate,
+        scanner: &mut Scanner<impl std::io::BufRead>,
+    ) -> Self {
         let mut slf = Map {
-            horizontal_walls: FixedBitSet::with_capacity(width * (height + 1)),
-            vertical_walls: FixedBitSet::with_capacity((width + 1) * height),
-            holes: FixedBitSet::with_capacity(width * height),
+            horizontal_walls: FixedBitSet::with_capacity(width as usize * (height as usize + 1)),
+            vertical_walls: FixedBitSet::with_capacity((width as usize + 1) * height as usize),
+            holes: FixedBitSet::with_capacity(width as usize * height as usize),
             holes_placement: vec![],
             width,
             height,
@@ -51,31 +55,34 @@ impl Map {
         }
 
         for _ in 0..scanner.read::<u32>() {
-            let x = scanner.read::<usize>();
-            let y = scanner.read::<usize>();
+            let x = scanner.read::<Coordinate>();
+            let y = scanner.read::<Coordinate>();
             slf.holes.insert(slf.tile_index(x, y));
-            slf.holes_placement.push((x, y));
+            slf.holes_placement.push([x, y]);
         }
 
         slf
     }
 
-    fn horizontal_wall_index(&self, x: usize, y: usize) -> usize {
-        x * (self.height + 1) + y
+    fn horizontal_wall_index(&self, x: Coordinate, y: Coordinate) -> usize {
+        let (h, x, y) = (self.height as usize, x as usize, y as usize);
+        x * (h + 1) + y
     }
 
-    fn vertical_wall_index(&self, x: usize, y: usize) -> usize {
-        y * (self.width + 1) + x
+    fn vertical_wall_index(&self, x: Coordinate, y: Coordinate) -> usize {
+        let (w, x, y) = (self.width as usize, x as usize, y as usize);
+        y * (w + 1) + x
     }
 
-    fn tile_index(&self, x: usize, y: usize) -> usize {
-        self.width * y + x
+    fn tile_index(&self, x: Coordinate, y: Coordinate) -> usize {
+        let (w, x, y) = (self.width as usize, x as usize, y as usize);
+        w * y + x
     }
 
-    fn image(&self, with_holes: bool, tile_width: usize, tile_height: usize) -> RgbImage {
+    fn image(&self, with_holes: bool, tile_width: u32, tile_height: u32) -> RgbImage {
         let mut img = RgbImage::new(
-            (self.width * tile_width) as u32,
-            (self.height * tile_height) as u32,
+            self.width as u32 * tile_width,
+            self.height as u32 * tile_height,
         );
 
         let wall_color = image::Rgb([255; 3]);
@@ -87,7 +94,7 @@ impl Map {
             for x in 0..self.width {
                 let to_fill = if with_holes && self.holes.contains(self.tile_index(x, y)) {
                     Some(hole_color)
-                } else if (x + y) % 2 == 1 {
+                } else if x % 2 == y % 2 {
                     Some(odd_color)
                 } else {
                     Some(even_color)
@@ -96,42 +103,42 @@ impl Map {
                 if let Some(to_fill) = to_fill {
                     for tx in 0..tile_width {
                         for ty in 0..tile_height {
-                            let tile_x = x * tile_width + tx;
-                            let tile_y = y * tile_height + ty;
-                            img.put_pixel(tile_x as u32, tile_y as u32, to_fill);
+                            let tile_x = x as u32 * tile_width + tx;
+                            let tile_y = y as u32 * tile_height + ty;
+                            img.put_pixel(tile_x, tile_y, to_fill);
                         }
                     }
                 }
 
-                if Direction::Left.blocked((x, y), self) {
+                if Direction::Left.blocked([x, y], self) {
                     for ty in 0..tile_height {
-                        let tile_x = x * tile_width;
-                        let tile_y = y * tile_height + ty;
-                        img.put_pixel(tile_x as u32, tile_y as u32, wall_color);
+                        let tile_x = x as u32 * tile_width;
+                        let tile_y = y as u32 * tile_height + ty;
+                        img.put_pixel(tile_x, tile_y, wall_color);
                     }
                 }
 
-                if Direction::Right.blocked((x, y), self) {
+                if Direction::Right.blocked([x, y], self) {
                     for ty in 0..tile_height {
-                        let tile_x = (x + 1) * tile_width - 1;
-                        let tile_y = y * tile_height + ty;
-                        img.put_pixel(tile_x as u32, tile_y as u32, wall_color);
+                        let tile_x = (x as u32 + 1) * tile_width - 1;
+                        let tile_y = y as u32 * tile_height + ty;
+                        img.put_pixel(tile_x, tile_y, wall_color);
                     }
                 }
 
-                if Direction::Up.blocked((x, y), self) {
+                if Direction::Up.blocked([x, y], self) {
                     for tx in 0..tile_width {
-                        let tile_x = x * tile_width + tx;
-                        let tile_y = y * tile_height;
-                        img.put_pixel(tile_x as u32, tile_y as u32, wall_color);
+                        let tile_x = x as u32 * tile_width + tx;
+                        let tile_y = y as u32 * tile_height;
+                        img.put_pixel(tile_x, tile_y, wall_color);
                     }
                 }
 
-                if Direction::Down.blocked((x, y), self) {
+                if Direction::Down.blocked([x, y], self) {
                     for tx in 0..tile_width {
-                        let tile_x = x * tile_width + tx;
-                        let tile_y = (y + 1) * tile_height - 1;
-                        img.put_pixel(tile_x as u32, tile_y as u32, wall_color);
+                        let tile_x = x as u32 * tile_width + tx;
+                        let tile_y = (y as u32 + 1) * tile_height - 1;
+                        img.put_pixel(tile_x, tile_y, wall_color);
                     }
                 }
             }
@@ -141,14 +148,16 @@ impl Map {
     }
 }
 
+type Coordinate = u8;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 struct State {
-    positions: [(usize, usize); 2],
+    positions: [[Coordinate; 2]; 2],
 }
 
 impl State {
     pub const START: State = State {
-        positions: [(0, 0); 2],
+        positions: [[0; 2]; 2],
     };
 }
 
@@ -163,12 +172,12 @@ enum Direction {
 impl Direction {
     pub const ALL: [Self; 4] = [Self::Right, Self::Left, Self::Up, Self::Down];
 
-    pub fn apply(self, pos: (usize, usize)) -> (usize, usize) {
+    pub fn apply(self, pos: [Coordinate; 2]) -> [Coordinate; 2] {
         match self {
-            Self::Right => (pos.0 + 1, pos.1),
-            Self::Left => (pos.0 - 1, pos.1),
-            Self::Up => (pos.0, pos.1 - 1),
-            Self::Down => (pos.0, pos.1 + 1),
+            Self::Right => [pos[0] + 1, pos[1]],
+            Self::Left => [pos[0] - 1, pos[1]],
+            Self::Up => [pos[0], pos[1] - 1],
+            Self::Down => [pos[0], pos[1] + 1],
         }
     }
 
@@ -210,48 +219,36 @@ impl Direction {
         styles[variant]
     }
 
-    pub fn blocked(self, pos: (usize, usize), map: &Map) -> bool {
+    pub fn blocked(self, pos: [Coordinate; 2], map: &Map) -> bool {
         match self {
             Self::Right => map
                 .vertical_walls
-                .contains(map.vertical_wall_index(pos.0 + 1, pos.1)),
+                .contains(map.vertical_wall_index(pos[0] + 1, pos[1])),
             Self::Left => map
                 .vertical_walls
-                .contains(map.vertical_wall_index(pos.0, pos.1)),
+                .contains(map.vertical_wall_index(pos[0], pos[1])),
             Self::Up => map
                 .horizontal_walls
-                .contains(map.horizontal_wall_index(pos.0, pos.1)),
+                .contains(map.horizontal_wall_index(pos[0], pos[1])),
             Self::Down => map
                 .horizontal_walls
-                .contains(map.horizontal_wall_index(pos.0, pos.1 + 1)),
-        }
-    }
-
-    pub fn from_movement(old_pos: (usize, usize), pos: (usize, usize)) -> Option<Self> {
-        use std::cmp::Ordering;
-
-        match (pos.0.cmp(&old_pos.0), pos.1.cmp(&old_pos.1)) {
-            (Ordering::Greater, Ordering::Equal) => Some(Self::Right),
-            (Ordering::Less, Ordering::Equal) => Some(Self::Left),
-            (Ordering::Equal, Ordering::Less) => Some(Self::Up),
-            (Ordering::Equal, Ordering::Greater) => Some(Self::Down),
-            _ => None,
+                .contains(map.horizontal_wall_index(pos[0], pos[1] + 1)),
         }
     }
 }
 
 fn apply_instructions<const RESPECT_HOLES: bool>(
-    start: (usize, usize),
+    start: [Coordinate; 2],
     map: &Map,
     instructions: &[Direction],
-) -> (usize, usize) {
+) -> [Coordinate; 2] {
     let mut pos = start;
 
     for &instruction in instructions.iter().rev() {
         if !instruction.blocked(pos, map) {
             pos = instruction.apply(pos);
-            if RESPECT_HOLES && map.holes.contains(map.tile_index(pos.0, pos.1)) {
-                pos = (0, 0);
+            if RESPECT_HOLES && map.holes.contains(map.tile_index(pos[0], pos[1])) {
+                pos = [0; 2];
             }
         }
     }
@@ -264,8 +261,8 @@ fn solve<const RESPECT_HOLES: bool>(
     save_images: bool,
     unicode: bool,
 ) {
-    let width = scanner.read::<usize>();
-    let height = scanner.read::<usize>();
+    let width = scanner.read::<Coordinate>();
+    let height = scanner.read::<Coordinate>();
 
     let maps: [_; 2] = std::array::from_fn(|_| Map::read(width, height, scanner));
 
@@ -280,26 +277,28 @@ fn solve<const RESPECT_HOLES: bool>(
     let mut v1 = vec![State::START];
     let mut v2 = vec![];
 
-    let states_count = (width * height).pow(2);
+    let tiles_count = width as usize * height as usize;
+    let states_count = tiles_count.pow(2);
 
     let mut visited_dirs: [_; 2] =
         std::array::from_fn(|_| FixedBitSet::with_capacity(states_count));
     let mut visited_movement: [_; 2] =
         std::array::from_fn(|_| FixedBitSet::with_capacity(states_count));
 
-    let visited_index = |pos: &[(usize, usize); 2]| -> usize {
-        (pos[0].1 * width + pos[0].0) * (width * height) + (pos[1].1 * width + pos[1].0)
+    let visited_index = |pos: &[[Coordinate; 2]; 2]| -> usize {
+        (pos[0][1] as usize * width as usize + pos[0][0] as usize) * tiles_count
+            + (pos[1][1] as usize * width as usize + pos[1][0] as usize)
     };
 
     let end_state = State {
-        positions: [(width - 1, height - 1); 2],
+        positions: [[width - 1, height - 1]; 2],
     };
 
     let end = visited_index(&end_state.positions);
 
     // BFS
     // dead end removal? not possible in 2d, because both states are "entangled"
-    // - possible in 4d but that's overkill
+    // - maybe possible in 4d but that's overkill
     let failed = 'res: loop {
         if v1.is_empty() {
             break 'res true;
@@ -309,6 +308,7 @@ fn solve<const RESPECT_HOLES: bool>(
         if max_capacity_needed > v2.capacity() {
             v2.reserve(max_capacity_needed - v2.capacity());
         }
+
         for state in v1.drain(..) {
             for dir in Direction::ALL {
                 let blocked: [_; 2] =
@@ -331,9 +331,9 @@ fn solve<const RESPECT_HOLES: bool>(
                     if RESPECT_HOLES {
                         for (map, position) in maps.iter().zip(positions.iter_mut()) {
                             // is the tile a hole?
-                            if map.holes.contains(map.tile_index(position.0, position.1)) {
+                            if map.holes.contains(map.tile_index(position[0], position[1])) {
                                 // then reset the position
-                                *position = (0, 0);
+                                *position = [0; 2];
                             }
                         }
                     }
@@ -403,7 +403,7 @@ fn solve<const RESPECT_HOLES: bool>(
 
         if RESPECT_HOLES {
             for i in 0..2 {
-                if current_state.positions[i] != (0, 0) {
+                if current_state.positions[i] != [0; 2] {
                     continue;
                 }
 
@@ -424,7 +424,7 @@ fn solve<const RESPECT_HOLES: bool>(
                 }
 
                 if !found {
-                    current_state.positions[i] = (0, 0);
+                    current_state.positions[i] = [0; 2];
                 }
 
                 break;
@@ -458,8 +458,8 @@ fn solve<const RESPECT_HOLES: bool>(
 
     println!(
         "Player 1 valid: {}, Player 2 valid: {}",
-        apply_instructions::<RESPECT_HOLES>((0, 0), &maps[0], &dirs) == end_state.positions[0],
-        apply_instructions::<RESPECT_HOLES>((0, 0), &maps[1], &dirs) == end_state.positions[1],
+        apply_instructions::<RESPECT_HOLES>([0; 2], &maps[0], &dirs) == end_state.positions[0],
+        apply_instructions::<RESPECT_HOLES>([0; 2], &maps[1], &dirs) == end_state.positions[1],
     );
 }
 
