@@ -1,0 +1,8 @@
+[package]
+name = "bwinf4322"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fixedbitset = "0.5.7"
+image = "0.25.5"
