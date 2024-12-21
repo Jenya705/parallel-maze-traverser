@@ -4,50 +4,10 @@ use fixedbitset::FixedBitSet;
 use image::RgbImage;
 use scanner::Scanner;
 
-struct BitSet {
-    vec: Vec<u8>,
-}
-
-impl BitSet {
-    pub fn new(bits: usize) -> Self {
-        Self {
-            vec: vec![0; (bits + 7) / 8],
-        }
-    }
-
-    pub fn contains(&self, index: usize) -> bool {
-        self.vec[index / 8] & (1 << (index % 8)) != 0
-    }
-
-    pub fn insert(&mut self, index: usize) {
-        self.vec[index / 8] |= 1 << (index % 8);
-    }
-
-    pub fn clear(&mut self, index: usize) {
-        self.vec[index / 8] &= !(1 << (index % 8));
-    }
-
-    pub fn set(&mut self, index: usize, value: bool) {
-        if value {
-            self.insert(index);
-        } else {
-            self.clear(index);
-        }
-    }
-
-    pub fn set_4_bits(&mut self, index: usize, bits: u8) {
-        self.vec[index / 2] |= bits << ((index % 2) * 4);
-    }
-
-    pub fn get_4_bits(&mut self, index: usize) -> u8 {
-        self.vec[index / 2] >> ((index % 2) * 4)
-    }
-}
-
 struct Map {
-    horizontal_walls: BitSet,
-    vertical_walls: BitSet,
-    holes: BitSet,
+    horizontal_walls: FixedBitSet,
+    vertical_walls: FixedBitSet,
+    holes: FixedBitSet,
     holes_placement: Vec<(usize, usize)>,
     width: usize,
     height: usize,
@@ -56,9 +16,9 @@ struct Map {
 impl Map {
     pub fn read(width: usize, height: usize, scanner: &mut Scanner<impl std::io::BufRead>) -> Self {
         let mut slf = Map {
-            horizontal_walls: BitSet::new(width * (height + 1)),
-            vertical_walls: BitSet::new((width + 1) * height),
-            holes: BitSet::new(width * height),
+            horizontal_walls: FixedBitSet::with_capacity(width * (height + 1)),
+            vertical_walls: FixedBitSet::with_capacity((width + 1) * height),
+            holes: FixedBitSet::with_capacity(width * height),
             holes_placement: vec![],
             width,
             height,
@@ -340,7 +300,6 @@ fn solve<const RESPECT_HOLES: bool>(
     // BFS
     // dead end removal? not possible in 2d, because both states are "entangled"
     // - possible in 4d but that's overkill
-
     let failed = 'res: loop {
         if v1.is_empty() {
             break 'res true;
@@ -350,7 +309,6 @@ fn solve<const RESPECT_HOLES: bool>(
         if max_capacity_needed > v2.capacity() {
             v2.reserve(max_capacity_needed - v2.capacity());
         }
-
         for state in v1.drain(..) {
             for dir in Direction::ALL {
                 let blocked: [_; 2] =
