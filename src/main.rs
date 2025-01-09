@@ -1,8 +1,28 @@
+mod graph;
+mod img;
 mod scanner;
 
 use fixedbitset::FixedBitSet;
 use image::RgbImage;
 use scanner::Scanner;
+
+struct InputData {
+    width: Coordinate,
+    height: Coordinate,
+    maps: [Map; 2],
+}
+
+impl InputData {
+    pub fn read(scanner: &mut Scanner<impl std::io::BufRead>) -> Self {
+        let width = scanner.read::<Coordinate>();
+        let height = scanner.read::<Coordinate>();
+        Self {
+            width,
+            height,
+            maps: std::array::from_fn(|_| Map::read(width, height, scanner)),
+        }
+    }
+}
 
 struct Map {
     horizontal_walls: FixedBitSet,
@@ -256,23 +276,12 @@ fn apply_instructions<const RESPECT_HOLES: bool>(
     pos
 }
 
-fn solve<const RESPECT_HOLES: bool>(
-    scanner: &mut Scanner<impl std::io::BufRead>,
-    save_images: bool,
-    unicode: bool,
-) {
-    let width = scanner.read::<Coordinate>();
-    let height = scanner.read::<Coordinate>();
-
-    let maps: [_; 2] = std::array::from_fn(|_| Map::read(width, height, scanner));
-
-    if save_images {
-        for (i, map) in maps.iter().enumerate() {
-            let img = map.image(RESPECT_HOLES, 5, 5);
-            img.save(format!("map_{i}.png")).unwrap();
-        }
-        return;
-    }
+fn solve<const RESPECT_HOLES: bool>(data: InputData, unicode: bool) {
+    let InputData {
+        width,
+        height,
+        maps,
+    } = data;
 
     let mut v1 = vec![State::START];
     let mut v2 = vec![];
@@ -466,6 +475,7 @@ fn solve<const RESPECT_HOLES: bool>(
 fn main() {
     let mut respect_holes = true;
     let mut image = false;
+    let mut graph = false;
     let mut unicode = false;
 
     for arg in std::env::args().skip(1) {
@@ -475,19 +485,23 @@ fn main() {
             image = !image;
         } else if arg == "--uni" {
             unicode = !unicode;
+        } else if arg == "--graph" {
+            graph = !graph;
         } else {
             let file = std::fs::File::open(&arg).unwrap();
             let mut scanner = Scanner::new(std::io::BufReader::new(file));
+            let data = InputData::read(&mut scanner);
 
             let start = std::time::Instant::now();
 
-            let solve = if respect_holes {
-                solve::<true>
-            } else {
-                solve::<false>
+            match (graph, image, respect_holes) {
+                (true, _, true) => graph::graph::<true>(data),
+                (true, _, false) => graph::graph::<false>(data),
+                (_, true, false) => img::image::<false>(data),
+                (_, true, true) => img::image::<true>(data),
+                (_, false, true) => solve::<true>(data, unicode),
+                (_, false, false) => solve::<false>(data, unicode),
             };
-
-            solve(&mut scanner, image, unicode);
 
             println!("time elapsed: {:?}", start.elapsed());
         }
