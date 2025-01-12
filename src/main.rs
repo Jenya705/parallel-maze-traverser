@@ -1,18 +1,27 @@
+#![feature(sync_unsafe_cell)]
+#![feature(get_many_mut)]
+
 mod graph;
 mod img;
+pub mod multithreaded;
 mod scanner;
 
 use fixedbitset::FixedBitSet;
 use image::RgbImage;
+use multithreaded::solve_multithreaded;
 use scanner::Scanner;
 
-struct InputData {
+pub(crate) struct InputData {
     width: Coordinate,
     height: Coordinate,
     maps: [Map; 2],
 }
 
 impl InputData {
+    pub fn any_holes(&self) -> bool {
+        self.maps.iter().any(|v| !v.holes_placement.is_empty())
+    }
+
     pub fn read(scanner: &mut Scanner<impl std::io::BufRead>) -> Self {
         let width = scanner.read::<Coordinate>();
         let height = scanner.read::<Coordinate>();
@@ -276,6 +285,17 @@ fn apply_instructions<const RESPECT_HOLES: bool>(
     pos
 }
 
+pub fn visited_index_fn(
+    width: u8,
+    _height: u8,
+    tiles_count: usize,
+) -> impl for<'a> Fn(&'a [[Coordinate; 2]; 2]) -> usize {
+    move |pos| -> usize {
+        (pos[0][1] as usize * width as usize + pos[0][0] as usize) * tiles_count
+            + (pos[1][1] as usize * width as usize + pos[1][0] as usize)
+    }
+}
+
 fn solve<const RESPECT_HOLES: bool>(data: InputData, unicode: bool) {
     let InputData {
         width,
@@ -294,10 +314,7 @@ fn solve<const RESPECT_HOLES: bool>(data: InputData, unicode: bool) {
     let mut visited_movement: [_; 2] =
         std::array::from_fn(|_| FixedBitSet::with_capacity(states_count));
 
-    let visited_index = |pos: &[[Coordinate; 2]; 2]| -> usize {
-        (pos[0][1] as usize * width as usize + pos[0][0] as usize) * tiles_count
-            + (pos[1][1] as usize * width as usize + pos[1][0] as usize)
-    };
+    let visited_index = visited_index_fn(width, height, tiles_count);
 
     let end_state = State {
         positions: [[width - 1, height - 1]; 2],
@@ -477,6 +494,7 @@ fn main() {
     let mut image = false;
     let mut graph = false;
     let mut unicode = false;
+    let mut mt = false;
 
     for arg in std::env::args().skip(1) {
         if arg == "--r" {
@@ -487,21 +505,40 @@ fn main() {
             unicode = !unicode;
         } else if arg == "--graph" {
             graph = !graph;
+        } else if arg == "--mt" {
+            mt = !mt;
         } else {
             let file = std::fs::File::open(&arg).unwrap();
             let mut scanner = Scanner::new(std::io::BufReader::new(file));
             let data = InputData::read(&mut scanner);
 
+            let respect_holes = respect_holes && data.any_holes();
+
             let start = std::time::Instant::now();
 
-            match (graph, image, respect_holes) {
-                (true, _, true) => graph::graph::<true>(data),
-                (true, _, false) => graph::graph::<false>(data),
-                (_, true, false) => img::image::<false>(data),
-                (_, true, true) => img::image::<true>(data),
-                (_, false, true) => solve::<true>(data, unicode),
-                (_, false, false) => solve::<false>(data, unicode),
-            };
+            if graph {
+                if respect_holes {
+                    graph::graph::<true>(data);
+                } else {
+                    graph::graph::<false>(data);
+                }
+            } else if image {
+                if respect_holes {
+                    img::image::<true>(data);
+                } else {
+                    img::image::<false>(data);
+                }
+            } else if mt {
+                if respect_holes {
+                    solve_multithreaded::<true>(data, 8, unicode);
+                } else {
+                    solve_multithreaded::<false>(data, 8, unicode);
+                }
+            } else if respect_holes {
+                solve::<true>(data, unicode);
+            } else {
+                solve::<false>(data, unicode);
+            }
 
             println!("time elapsed: {:?}", start.elapsed());
         }

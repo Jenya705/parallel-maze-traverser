@@ -1,8 +1,6 @@
 use std::io;
 
-use fixedbitset::FixedBitSet;
-
-use crate::{Coordinate, Direction, InputData, State};
+use crate::{Direction, InputData};
 
 pub fn graph<const RESPECT_HOLES: bool>(input_data: InputData) {
     let mut file = std::fs::File::create("graph.dot").unwrap();
@@ -19,7 +17,7 @@ pub fn gen_graph<W: io::Write, const RESPECT_HOLES: bool>(
         maps,
     } = input_data;
 
-    write!(write, "graph G {{")?;
+    write!(write, "DiGraph G {{")?;
 
     for x1 in 0..width {
         for y1 in 0..height {
@@ -27,7 +25,7 @@ pub fn gen_graph<W: io::Write, const RESPECT_HOLES: bool>(
                 for y2 in 0..height {
                     let positions = [[x1, y1], [x2, y2]];
 
-                    for dir in [Direction::Right, Direction::Down] {
+                    for dir in Direction::ALL {
                         let blocked: [_; 2] =
                             std::array::from_fn(|i| dir.blocked(positions[i], &maps[0]));
 
@@ -40,7 +38,7 @@ pub fn gen_graph<W: io::Write, const RESPECT_HOLES: bool>(
                                 }
                             });
 
-                            write!(write, r#""{:?}" -- "{:?}""#, positions, new_positions)?;
+                            write!(write, r#""{:?}" -> "{:?}""#, positions, new_positions)?;
                         }
                     }
                 }
