@@ -1,0 +1,3 @@
+vvvv>vv>^>>v>>>vvvv>v<v<vvvvv<<v<v<vvvv>>vv>>vv><vvv<v>v<<v<^<vv>>vv>>v<vv>>>>vv>>v>>v>vv<<vv<v<vv>^>vv<v<v<^<^<^<v<v>>vvv>>^>>^>vvvv<<<^>>^<^v>vvv<vvv>^>v>v>v>>>>>
+Instruction's count: 164, Move amount: 240
+time elapsed: 4.2984ms

@@ -1,0 +1,4 @@
+Threads are ignored for non-async bitsets
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Instruction's count: 65, Move amount: 92
+time elapsed: 452µs

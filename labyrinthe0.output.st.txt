@@ -1,0 +1,4 @@
+Threads are ignored for non-async bitsets
+vv>^^>vv
+Instruction's count: 8, Move amount: 14
+time elapsed: 113.8µs

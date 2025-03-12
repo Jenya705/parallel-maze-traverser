@@ -1,14 +1,23 @@
 #![feature(sync_unsafe_cell)]
-#![feature(get_many_mut)]
 
+mod astar;
+mod bfs;
+mod delta_list;
 mod graph;
 mod img;
-pub mod multithreaded;
+mod instructions;
 mod scanner;
 
+use std::{collections::HashSet, io::Write, process::Command, sync::Arc};
+
+use astar::{
+    DisparityPunishableManhattanDistancePriorityQueue, ManhattanDistancePriorityQueue,
+    SingleBFSDistancePriorityQueue,
+};
+use clap::{Parser, ValueEnum};
+use delta_list::DeltaListKind;
 use fixedbitset::FixedBitSet;
-use image::RgbImage;
-use multithreaded::solve_multithreaded;
+use image::{Rgb, RgbImage};
 use scanner::Scanner;
 
 pub(crate) struct InputData {
@@ -33,7 +42,7 @@ impl InputData {
     }
 }
 
-struct Map {
+pub struct Map {
     horizontal_walls: FixedBitSet,
     vertical_walls: FixedBitSet,
     holes: FixedBitSet,
@@ -94,453 +103,290 @@ impl Map {
     }
 
     fn horizontal_wall_index(&self, x: Coordinate, y: Coordinate) -> usize {
-        let (h, x, y) = (self.height as usize, x as usize, y as usize);
+        Self::horizontal_wall_index_with(x, y, self.height as usize)
+    }
+
+    pub fn horizontal_wall_index_with(x: Coordinate, y: Coordinate, h: usize) -> usize {
+        let (x, y) = (x as usize, y as usize);
         x * (h + 1) + y
     }
 
     fn vertical_wall_index(&self, x: Coordinate, y: Coordinate) -> usize {
-        let (w, x, y) = (self.width as usize, x as usize, y as usize);
+        Self::vertical_wall_index_with(x, y, self.width as usize)
+    }
+
+    pub fn vertical_wall_index_with(x: Coordinate, y: Coordinate, w: usize) -> usize {
+        let (x, y) = (x as usize, y as usize);
         y * (w + 1) + x
     }
 
     fn tile_index(&self, x: Coordinate, y: Coordinate) -> usize {
-        let (w, x, y) = (self.width as usize, x as usize, y as usize);
+        Self::tile_index_with(x, y, self.width as _)
+    }
+
+    pub fn tile_index_with(x: Coordinate, y: Coordinate, w: usize) -> usize {
+        let (x, y) = (x as usize, y as usize);
         w * y + x
     }
 
-    fn image(&self, with_holes: bool, tile_width: u32, tile_height: u32) -> RgbImage {
-        let mut img = RgbImage::new(
-            self.width as u32 * tile_width,
-            self.height as u32 * tile_height,
+    fn image(
+        &self,
+        respect_holes: bool,
+        tile_width: u32,
+        tile_height: u32,
+        highlight: HashSet<[Coordinate; 2]>,
+    ) -> RgbImage {
+        let mut image = RgbImage::new(
+            tile_width * self.width as u32,
+            tile_height * self.height as u32,
         );
 
-        let wall_color = image::Rgb([255; 3]);
-        let hole_color = image::Rgb([127, 0, 0]);
-        let odd_color = image::Rgb([50; 3]);
-        let even_color = image::Rgb([0; 3]);
+        const WALL_COLOR: Rgb<u8> = image::Rgb([0; 3]);
 
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let to_fill = if with_holes && self.holes.contains(self.tile_index(x, y)) {
-                    Some(hole_color)
-                } else if x % 2 == y % 2 {
-                    Some(odd_color)
+        for x in 0..self.width {
+            for y in 0..self.height {
+                let mut fill_color = if respect_holes && self.holes.contains(self.tile_index(x, y))
+                {
+                    image::Rgb([200, 10, 10])
+                } else if (x + y) % 2 == 0 {
+                    image::Rgb([200; 3])
                 } else {
-                    Some(even_color)
+                    image::Rgb([255; 3])
                 };
 
-                if let Some(to_fill) = to_fill {
-                    for tx in 0..tile_width {
-                        for ty in 0..tile_height {
-                            let tile_x = x as u32 * tile_width + tx;
-                            let tile_y = y as u32 * tile_height + ty;
-                            img.put_pixel(tile_x, tile_y, to_fill);
-                        }
-                    }
+                if highlight.contains(&[x, y]) {
+                    fill_color.0[1] = 100;
                 }
 
-                if Direction::Left.blocked([x, y], self) {
+                for tx in 0..tile_width {
                     for ty in 0..tile_height {
-                        let tile_x = x as u32 * tile_width;
-                        let tile_y = y as u32 * tile_height + ty;
-                        img.put_pixel(tile_x, tile_y, wall_color);
+                        image.put_pixel(
+                            x as u32 * tile_width + tx,
+                            y as u32 * tile_height + ty,
+                            fill_color,
+                        );
                     }
                 }
 
-                if Direction::Right.blocked([x, y], self) {
+                if self.vertical_walls.contains(self.vertical_wall_index(x, y)) {
                     for ty in 0..tile_height {
-                        let tile_x = (x as u32 + 1) * tile_width - 1;
-                        let tile_y = y as u32 * tile_height + ty;
-                        img.put_pixel(tile_x, tile_y, wall_color);
+                        image.put_pixel(
+                            x as u32 * tile_width,
+                            y as u32 * tile_height + ty,
+                            WALL_COLOR,
+                        );
                     }
                 }
 
-                if Direction::Up.blocked([x, y], self) {
+                if self
+                    .horizontal_walls
+                    .contains(self.horizontal_wall_index(x, y))
+                {
                     for tx in 0..tile_width {
-                        let tile_x = x as u32 * tile_width + tx;
-                        let tile_y = y as u32 * tile_height;
-                        img.put_pixel(tile_x, tile_y, wall_color);
+                        image.put_pixel(
+                            x as u32 * tile_width + tx,
+                            y as u32 * tile_height,
+                            WALL_COLOR,
+                        );
                     }
                 }
 
-                if Direction::Down.blocked([x, y], self) {
+                if self
+                    .vertical_walls
+                    .contains(self.vertical_wall_index(x, y) + 1)
+                {
+                    for ty in 0..tile_height {
+                        image.put_pixel(
+                            x as u32 * tile_width + tile_width - 1,
+                            y as u32 * tile_height + ty,
+                            WALL_COLOR,
+                        );
+                    }
+                }
+
+                if self
+                    .horizontal_walls
+                    .contains(self.horizontal_wall_index(x, y) + 1)
+                {
                     for tx in 0..tile_width {
-                        let tile_x = x as u32 * tile_width + tx;
-                        let tile_y = (y as u32 + 1) * tile_height - 1;
-                        img.put_pixel(tile_x, tile_y, wall_color);
+                        image.put_pixel(
+                            x as u32 * tile_width + tx,
+                            y as u32 * tile_height + tile_height - 1,
+                            WALL_COLOR,
+                        );
                     }
                 }
             }
         }
 
-        img
+        image
     }
 }
 
-type Coordinate = u8;
+type Coordinate = i16;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-struct State {
-    positions: [[Coordinate; 2]; 2],
+pub fn end_state(width: Coordinate, height: Coordinate) -> [Coordinate; 4] {
+    [width - 1, height - 1, width - 1, height - 1]
 }
 
-impl State {
-    pub const START: State = State {
-        positions: [[0; 2]; 2],
-    };
+pub fn calculate_visited_index(state: [Coordinate; 4], width: usize, tiles_count: usize) -> usize {
+    // dbg!(state);
+    (state[1] as usize * width + state[0] as usize) * tiles_count
+        + (state[3] as usize * width + state[2] as usize)
 }
 
-#[derive(Clone, Copy, Debug)]
-enum Direction {
-    Right,
-    Left,
-    Up,
-    Down,
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum PathGenerator {
+    /// Breadth First Search Multi Threaded with Compare-and-Swap Bit Set
+    BFSMTCSBS,
+    /// Breadth First Search Multi Threaded with Atomic Bit Set
+    BFSMTABS,
+    /// Breadth First Search Single Threaded with Bit Set
+    BFSSTBS,
+    /// Breadth First Search Single Threaded with Lazy Hash Map (extremely useless)
+    BFSSTLHM,
+    /// A* with Manhattan Distance priority queue
+    ASMD,
+    /// A* with Disparity Punishable Manhattan Distance priority queue (useless)
+    ASDPMD,
+    /// A* with 2D BFS calculated distances priority queue
+    AS2DBFS,
+    /// No path will be generated
+    None,
 }
 
-impl Direction {
-    pub const ALL: [Self; 4] = [Self::Right, Self::Left, Self::Up, Self::Down];
-
-    pub fn apply(self, pos: [Coordinate; 2]) -> [Coordinate; 2] {
-        match self {
-            Self::Right => [pos[0] + 1, pos[1]],
-            Self::Left => [pos[0] - 1, pos[1]],
-            Self::Up => [pos[0], pos[1] - 1],
-            Self::Down => [pos[0], pos[1] + 1],
-        }
-    }
-
-    pub fn opposite(self) -> Self {
-        match self {
-            Self::Right => Self::Left,
-            Self::Left => Self::Right,
-            Self::Up => Self::Down,
-            Self::Down => Self::Up,
-        }
-    }
-
-    pub fn bits(self) -> [bool; 2] {
-        match self {
-            Self::Right => [false, false],
-            Self::Left => [false, true],
-            Self::Up => [true, false],
-            Self::Down => [true, true],
-        }
-    }
-
-    pub fn from_bits(bits: [bool; 2]) -> Self {
-        match bits {
-            [false, false] => Self::Right,
-            [false, true] => Self::Left,
-            [true, false] => Self::Up,
-            [true, true] => Self::Down,
-        }
-    }
-
-    pub fn arrow_char(self, variant: usize) -> char {
-        let styles = match self {
-            Self::Right => ['>', '→'],
-            Self::Left => ['<', '←'],
-            Self::Up => ['^', '↑'],
-            Self::Down => ['v', '↓'],
-        };
-
-        styles[variant]
-    }
-
-    pub fn blocked(self, pos: [Coordinate; 2], map: &Map) -> bool {
-        match self {
-            Self::Right => map
-                .vertical_walls
-                .contains(map.vertical_wall_index(pos[0] + 1, pos[1])),
-            Self::Left => map
-                .vertical_walls
-                .contains(map.vertical_wall_index(pos[0], pos[1])),
-            Self::Up => map
-                .horizontal_walls
-                .contains(map.horizontal_wall_index(pos[0], pos[1])),
-            Self::Down => map
-                .horizontal_walls
-                .contains(map.horizontal_wall_index(pos[0], pos[1] + 1)),
-        }
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum OutputType {
+    // Saves images of both mazes, map_0.png and map_1.png
+    Image,
+    // Saves graph.dot file of the bsf search
+    Graph,
+    // Saves graph.dot file and tries to compile it using Dot utility
+    GraphCmp,
+    // Prints instructions into the console
+    Instructions,
 }
 
-fn apply_instructions<const RESPECT_HOLES: bool>(
-    start: [Coordinate; 2],
-    map: &Map,
-    instructions: &[Direction],
-) -> [Coordinate; 2] {
-    let mut pos = start;
-
-    for &instruction in instructions.iter().rev() {
-        if !instruction.blocked(pos, map) {
-            pos = instruction.apply(pos);
-            if RESPECT_HOLES && map.holes.contains(map.tile_index(pos[0], pos[1])) {
-                pos = [0; 2];
-            }
-        }
-    }
-
-    pos
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct App {
+    #[arg(short, long, default_value_t = false)]
+    exclude_holes: bool,
+    #[arg(short, long, value_enum, default_value_t = PathGenerator::BFSSTBS)]
+    path_gen: PathGenerator,
+    #[arg(short, long, value_enum, default_value_t = OutputType::Instructions)]
+    output: OutputType,
+    #[arg(short = 'u', long, default_value_t = false)]
+    unicode: bool,
+    #[arg(short = 't', long, default_value_t = 4)]
+    threads: usize,
+    #[arg()]
+    input_file: String,
 }
 
-pub fn visited_index_fn(
-    width: u8,
-    _height: u8,
-    tiles_count: usize,
-) -> impl for<'a> Fn(&'a [[Coordinate; 2]; 2]) -> usize {
-    move |pos| -> usize {
-        (pos[0][1] as usize * width as usize + pos[0][0] as usize) * tiles_count
-            + (pos[1][1] as usize * width as usize + pos[1][0] as usize)
-    }
-}
+fn main() {
+    let app = App::parse();
 
-fn solve<const RESPECT_HOLES: bool>(data: InputData, unicode: bool) {
+    let file = std::fs::File::open(&app.input_file).unwrap();
+    let mut scanner = Scanner::new(std::io::BufReader::new(file));
+    let data = InputData::read(&mut scanner);
+    let respect_holes = !app.exclude_holes && data.any_holes();
+
     let InputData {
         width,
         height,
         maps,
     } = data;
 
-    let mut v1 = vec![State::START];
-    let mut v2 = vec![];
+    let maps = Arc::new(maps);
 
-    let tiles_count = width as usize * height as usize;
-    let states_count = tiles_count.pow(2);
-
-    let mut visited_dirs: [_; 2] =
-        std::array::from_fn(|_| FixedBitSet::with_capacity(states_count));
-    let mut visited_movement: [_; 2] =
-        std::array::from_fn(|_| FixedBitSet::with_capacity(states_count));
-
-    let visited_index = visited_index_fn(width, height, tiles_count);
-
-    let end_state = State {
-        positions: [[width - 1, height - 1]; 2],
-    };
-
-    let end = visited_index(&end_state.positions);
-
-    // BFS
-    // dead end removal? not possible in 2d, because both states are "entangled"
-    // - maybe possible in 4d but that's overkill
-    let failed = 'res: loop {
-        if v1.is_empty() {
-            break 'res true;
-        }
-
-        let max_capacity_needed = v1.len() * 3;
-        if max_capacity_needed > v2.capacity() {
-            v2.reserve(max_capacity_needed - v2.capacity());
-        }
-
-        for state in v1.drain(..) {
-            for dir in Direction::ALL {
-                let blocked: [_; 2] =
-                    std::array::from_fn(|i| dir.blocked(state.positions[i], &maps[i]));
-
-                // if at least one player is not blocked by a wall...
-                if blocked.into_iter().any(|v| !v) {
-                    let mut positions = std::array::from_fn(|i| {
-                        if blocked[i] {
-                            state.positions[i]
-                        } else {
-                            dir.apply(state.positions[i])
-                        }
-                    });
-
-                    // state id for a position pair,
-                    // that happens "inbetween of time" (i.e. before applying the hole's movement )
-                    let unadjusted_visited_i = visited_index(&positions);
-
-                    if RESPECT_HOLES {
-                        for (map, position) in maps.iter().zip(positions.iter_mut()) {
-                            // is the tile a hole?
-                            if map.holes.contains(map.tile_index(position[0], position[1])) {
-                                // then reset the position
-                                *position = [0; 2];
-                            }
-                        }
-                    }
-
-                    let visited_i = visited_index(&positions);
-
-                    // and the state wasn't already observed...
-                    // (if both bits are set to false, then it it is not visited)
-                    if visited_movement.iter().any(|v| v.contains(visited_i)) {
-                        continue;
-                    }
-
-                    for (bit, bit_set) in dir.bits().into_iter().zip(visited_dirs.iter_mut()) {
-                        bit_set.set(unadjusted_visited_i, bit);
-                        bit_set.set(visited_i, bit);
-                    }
-
-                    for (bit, bit_set) in blocked.into_iter().zip(visited_movement.iter_mut()) {
-                        bit_set.set(unadjusted_visited_i, !bit);
-                        bit_set.set(visited_i, !bit);
-                    }
-
-                    // then proceed
-                    let new_state = State { positions };
-
-                    if visited_i == end {
-                        // we've reached the end!
-                        break 'res false;
-                    }
-
-                    v2.push(new_state);
-                }
+    macro_rules! launch_bfs {
+        ($kind: expr) => {
+            if respect_holes {
+                let mut callback = bfs::BFSInstructionsCallback::<true>::default();
+                bfs::launch_bfs::<true>(
+                    width,
+                    height,
+                    Arc::clone(&maps),
+                    app.threads,
+                    $kind,
+                    &mut callback,
+                );
+                (callback.instructions, callback.moves)
+            } else {
+                let mut callback = bfs::BFSInstructionsCallback::<false>::default();
+                bfs::launch_bfs::<false>(
+                    width,
+                    height,
+                    Arc::clone(&maps),
+                    app.threads,
+                    $kind,
+                    &mut callback,
+                );
+                (callback.instructions, callback.moves)
             }
-        }
-
-        std::mem::swap(&mut v1, &mut v2);
-    };
-
-    println!(
-        "v1.capacity: {}, v2.capacity: {}",
-        v1.capacity(),
-        v2.capacity()
-    );
-
-    if failed {
-        println!("It's impossible");
-        return;
-    }
-
-    println!("It's possible");
-
-    let mut current_state = end_state;
-    let mut dirs = vec![];
-    let mut moves_amount = 0usize;
-
-    while current_state != State::START {
-        let visited_i = visited_index(&current_state.positions);
-
-        let movement: [_; 2] = std::array::from_fn(|i| visited_movement[i].contains(visited_i));
-
-        assert_ne!(movement, [false; 2]);
-
-        let dir =
-            Direction::from_bits(std::array::from_fn(|i| visited_dirs[i].contains(visited_i)));
-
-        dirs.push(dir);
-
-        if RESPECT_HOLES {
-            for i in 0..2 {
-                if current_state.positions[i] != [0; 2] {
-                    continue;
-                }
-
-                let mut found = false;
-
-                for &hole in maps[i].holes_placement.iter() {
-                    current_state.positions[i] = hole;
-
-                    let unadjusted_visited_i = visited_index(&current_state.positions);
-
-                    let unadjusted_movement: [_; 2] =
-                        std::array::from_fn(|i| visited_movement[i].contains(unadjusted_visited_i));
-
-                    if unadjusted_movement == movement {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if !found {
-                    current_state.positions[i] = [0; 2];
-                }
-
-                break;
-            }
-        }
-
-        let dir = dir.opposite();
-
-        current_state = State {
-            positions: std::array::from_fn(|i| {
-                if movement[i] {
-                    moves_amount += 1;
-                    dir.apply(current_state.positions[i])
-                } else {
-                    current_state.positions[i]
-                }
-            }),
         };
     }
 
-    for (_i, &dir) in dirs.iter().rev().enumerate() {
-        print!("{}", dir.arrow_char(if unicode { 1 } else { 0 }));
+    macro_rules! launch_astar {
+        ($queue: ty) => {
+            if respect_holes {
+                let mut callback = bfs::BFSInstructionsCallback::<true>::default();
+                astar::launch_astar::<$queue, true>(width, height, &maps, &mut callback);
+                (callback.instructions, callback.moves)
+            } else {
+                let mut callback = bfs::BFSInstructionsCallback::<false>::default();
+                astar::launch_astar::<$queue, false>(width, height, &maps, &mut callback);
+                (callback.instructions, callback.moves)
+            }
+        };
     }
 
-    println!();
-    println!(
-        "Instruction's count: {}, Move's amount: {}",
-        dirs.len(),
-        moves_amount,
-    );
-
-    println!(
-        "Player 1 valid: {}, Player 2 valid: {}",
-        apply_instructions::<RESPECT_HOLES>([0; 2], &maps[0], &dirs) == end_state.positions[0],
-        apply_instructions::<RESPECT_HOLES>([0; 2], &maps[1], &dirs) == end_state.positions[1],
-    );
-}
-
-fn main() {
-    let mut respect_holes = true;
-    let mut image = false;
-    let mut graph = false;
-    let mut unicode = false;
-    let mut mt = false;
-
-    for arg in std::env::args().skip(1) {
-        if arg == "--r" {
-            respect_holes = !respect_holes;
-        } else if arg == "--png" {
-            image = !image;
-        } else if arg == "--uni" {
-            unicode = !unicode;
-        } else if arg == "--graph" {
-            graph = !graph;
-        } else if arg == "--mt" {
-            mt = !mt;
-        } else {
-            let file = std::fs::File::open(&arg).unwrap();
-            let mut scanner = Scanner::new(std::io::BufReader::new(file));
-            let data = InputData::read(&mut scanner);
-
-            let respect_holes = respect_holes && data.any_holes();
-
-            let start = std::time::Instant::now();
-
-            if graph {
-                if respect_holes {
-                    graph::graph::<true>(data);
-                } else {
-                    graph::graph::<false>(data);
-                }
-            } else if image {
-                if respect_holes {
-                    img::image::<true>(data);
-                } else {
-                    img::image::<false>(data);
-                }
-            } else if mt {
-                if respect_holes {
-                    solve_multithreaded::<true>(data, 8, unicode);
-                } else {
-                    solve_multithreaded::<false>(data, 8, unicode);
-                }
-            } else if respect_holes {
-                solve::<true>(data, unicode);
+    let (instructions, moves) = match app.path_gen {
+        PathGenerator::BFSMTCSBS => launch_bfs!(DeltaListKind::CompareAndSwapAtomicBitSet),
+        PathGenerator::BFSSTLHM => launch_bfs!(DeltaListKind::LazyHashMap),
+        PathGenerator::BFSMTABS => launch_bfs!(DeltaListKind::AtomicBitSet),
+        PathGenerator::BFSSTBS => launch_bfs!(DeltaListKind::BitSet),
+        PathGenerator::ASMD => launch_astar!(ManhattanDistancePriorityQueue),
+        PathGenerator::AS2DBFS => {
+            if respect_holes {
+                launch_astar!(SingleBFSDistancePriorityQueue::<true>)
             } else {
-                solve::<false>(data, unicode);
+                launch_astar!(SingleBFSDistancePriorityQueue::<false>)
+            }
+        }
+        PathGenerator::ASDPMD => launch_astar!(DisparityPunishableManhattanDistancePriorityQueue),
+        PathGenerator::None => (vec![], 0),
+    };
+
+    match app.output {
+        OutputType::Image => {
+            if respect_holes {
+                img::image::<true>(&maps, &instructions);
+            } else {
+                img::image::<false>(&maps, &instructions)
+            }
+        }
+        OutputType::Graph | OutputType::GraphCmp => {
+            if respect_holes {
+                graph::graph::<true>(width, height, &maps, &instructions);
+            } else {
+                graph::graph::<false>(width, height, &maps, &instructions);
             }
 
-            println!("time elapsed: {:?}", start.elapsed());
+            if matches!(app.output, OutputType::GraphCmp) {
+                let process = Command::new("dot")
+                    .arg("-Tsvg")
+                    .arg("graph.dot")
+                    .output()
+                    .expect("GraphViz's Dot utility wasn't found");
+
+                let mut svg_file = std::fs::File::create("graph.svg").unwrap();
+                svg_file.write_all(&process.stdout).unwrap();
+            }
+        }
+        OutputType::Instructions => {
+            bfs::output(&instructions, moves, if app.unicode { 1 } else { 0 });
         }
     }
 }
