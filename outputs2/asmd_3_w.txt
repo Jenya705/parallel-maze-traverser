@@ -1,0 +1,6 @@
+len: 250000
+written: 9384
+A* time elapsed: 924µs
+0 valid: true, 1 valid: true
+vvvv>vvvv>vv>^>v>>>>>vv<^<v<v>v>^^<v>^v<v<<<v>>>>>>v<v>v<v>>^<^><v>^^>v>^<^>^>^>>v>vvvv>v<vvvvvv<vv>v>v>>vv<v>>^<v<^>^>^v<<^>^^v<<<<<<<vvvvv>vv>>vvvvv<v>v<<v<^<vv>>>>v<vv>vv>vv>vvv^>^v<vvv>^>vvv<v<^^v<^^v<^<v<v>>vvv>>vvv>>>>^>v<<<<v<<<^^<vvvv>>>>>>v>>vvv^<^>vv^^<vv^<^<vv^^<vv^^>vv<<<v<vvvv>>>v<vvvv<vv>v>v>>v>>>^^^<<v>>v<^^>v<<<<<<<<vvv>^>v>v>v>>>^>^<v<<v>^>v<^^<v<<^>>>><<v>>^^<^>^<^><vvvv>vv>>>>vv>>v>>vvv<vv>^^<vv><v><vv>v<<v>><<v>><v>>>>^>>^>^>vvv<vvv>
+Moves: 534, Instructions: 457

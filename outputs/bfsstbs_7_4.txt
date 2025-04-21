@@ -1,0 +1,8 @@
+BFS time elapsed: 2.7044ms
+No solution found.
+BFS time elapsed: 3.2388ms
+No solution found.
+BFS time elapsed: 2.6467ms
+No solution found.
+BFS time elapsed: 2.8424ms
+No solution found.

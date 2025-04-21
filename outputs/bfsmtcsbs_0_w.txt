@@ -1,0 +1,24 @@
+len: 81
+written: 31
+BFS time elapsed: 277.7µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8
+len: 81
+written: 31
+BFS time elapsed: 248.1µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8
+len: 81
+written: 31
+BFS time elapsed: 288.1µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8
+len: 81
+written: 31
+BFS time elapsed: 279.1µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8

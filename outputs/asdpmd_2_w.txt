@@ -1,0 +1,24 @@
+len: 10000
+written: 4703
+A* time elapsed: 336.6µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v>v>>v<^<^<<<<^<<vvv>v>>>>vv>>^^>v>v
+Moves: 114, Instructions: 93
+len: 10000
+written: 4703
+A* time elapsed: 392µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v>v>>v<^<^<<<<^<<vvv>v>>>>vv>>^^>v>v
+Moves: 114, Instructions: 93
+len: 10000
+written: 4703
+A* time elapsed: 403.4µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v>v>>v<^<^<<<<^<<vvv>v>>>>vv>>^^>v>v
+Moves: 114, Instructions: 93
+len: 10000
+written: 4703
+A* time elapsed: 386.6µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v>v>>v<^<^<<<<^<<vvv>v>>>>vv>>^^>v>v
+Moves: 114, Instructions: 93

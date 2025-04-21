@@ -1,0 +1,16 @@
+BFS time elapsed: 28.7µs
+0 valid: true, 1 valid: true
+>>>>vv<^<v<^<vv>^>v>^^<<^>>>vvv
+Moves: 46, Instructions: 31
+BFS time elapsed: 24.5µs
+0 valid: true, 1 valid: true
+>>>>vv<^<v<^<vv>^>v>^^<<^>>>vvv
+Moves: 46, Instructions: 31
+BFS time elapsed: 26µs
+0 valid: true, 1 valid: true
+>>>>vv<^<v<^<vv>^>v>^^<<^>>>vvv
+Moves: 46, Instructions: 31
+BFS time elapsed: 24.5µs
+0 valid: true, 1 valid: true
+>>>>vv<^<v<^<vv>^>v>^^<<^>>>vvv
+Moves: 46, Instructions: 31

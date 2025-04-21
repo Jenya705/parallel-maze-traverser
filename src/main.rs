@@ -8,16 +8,16 @@ mod img;
 mod instructions;
 mod scanner;
 
-use std::{collections::HashSet, io::Write, process::Command, sync::Arc};
+use std::{io::Write, process::Command, sync::Arc};
 
 use astar::{
     DisparityPunishableManhattanDistancePriorityQueue, ManhattanDistancePriorityQueue,
     SingleBFSDistancePriorityQueue,
 };
+use bfs::launch_bfs_2d;
 use clap::{Parser, ValueEnum};
-use delta_list::DeltaListKind;
+use delta_list::FourBitDeltaListKind;
 use fixedbitset::FixedBitSet;
-use image::{Rgb, RgbImage};
 use scanner::Scanner;
 
 pub(crate) struct InputData {
@@ -129,106 +129,20 @@ impl Map {
         w * y + x
     }
 
-    fn image(
-        &self,
-        respect_holes: bool,
-        tile_width: u32,
-        tile_height: u32,
-        highlight: HashSet<[Coordinate; 2]>,
-    ) -> RgbImage {
-        let mut image = RgbImage::new(
-            tile_width * self.width as u32,
-            tile_height * self.height as u32,
-        );
-
-        const WALL_COLOR: Rgb<u8> = image::Rgb([0; 3]);
-
-        for x in 0..self.width {
-            for y in 0..self.height {
-                let mut fill_color = if respect_holes && self.holes.contains(self.tile_index(x, y))
-                {
-                    image::Rgb([200, 10, 10])
-                } else if (x + y) % 2 == 0 {
-                    image::Rgb([200; 3])
-                } else {
-                    image::Rgb([255; 3])
-                };
-
-                if highlight.contains(&[x, y]) {
-                    fill_color.0[1] = 100;
-                }
-
-                for tx in 0..tile_width {
-                    for ty in 0..tile_height {
-                        image.put_pixel(
-                            x as u32 * tile_width + tx,
-                            y as u32 * tile_height + ty,
-                            fill_color,
-                        );
-                    }
-                }
-
-                if self.vertical_walls.contains(self.vertical_wall_index(x, y)) {
-                    for ty in 0..tile_height {
-                        image.put_pixel(
-                            x as u32 * tile_width,
-                            y as u32 * tile_height + ty,
-                            WALL_COLOR,
-                        );
-                    }
-                }
-
-                if self
-                    .horizontal_walls
-                    .contains(self.horizontal_wall_index(x, y))
-                {
-                    for tx in 0..tile_width {
-                        image.put_pixel(
-                            x as u32 * tile_width + tx,
-                            y as u32 * tile_height,
-                            WALL_COLOR,
-                        );
-                    }
-                }
-
-                if self
-                    .vertical_walls
-                    .contains(self.vertical_wall_index(x, y) + 1)
-                {
-                    for ty in 0..tile_height {
-                        image.put_pixel(
-                            x as u32 * tile_width + tile_width - 1,
-                            y as u32 * tile_height + ty,
-                            WALL_COLOR,
-                        );
-                    }
-                }
-
-                if self
-                    .horizontal_walls
-                    .contains(self.horizontal_wall_index(x, y) + 1)
-                {
-                    for tx in 0..tile_width {
-                        image.put_pixel(
-                            x as u32 * tile_width + tx,
-                            y as u32 * tile_height + tile_height - 1,
-                            WALL_COLOR,
-                        );
-                    }
-                }
-            }
-        }
-
-        image
+    pub fn tile_index_with_vec(pos: [Coordinate; 2], w: usize) -> usize {
+        Self::tile_index_with(pos[0], pos[1], w)
     }
 }
 
-type Coordinate = i16;
+/// Definiert wie groß eine Koordinate eines Gängers sein kann
+pub type Coordinate = i16;
 
+/// Gibt den Endzustand zurück
 pub fn end_state(width: Coordinate, height: Coordinate) -> [Coordinate; 4] {
     [width - 1, height - 1, width - 1, height - 1]
 }
 
+/// Gibt den Index des Zustandes zurück
 pub fn calculate_visited_index(state: [Coordinate; 4], width: usize, tiles_count: usize) -> usize {
     // dbg!(state);
     (state[1] as usize * width + state[0] as usize) * tiles_count
@@ -251,19 +165,21 @@ enum PathGenerator {
     ASDPMD,
     /// A* with 2D BFS calculated distances priority queue
     AS2DBFS,
+    /// Breadth First Search in 2-Dimensions
+    BFS2D,
     /// No path will be generated
     None,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum OutputType {
-    // Saves images of both mazes, map_0.png and map_1.png
+    /// Saves images of both mazes, map_0.png and map_1.png
     Image,
-    // Saves graph.dot file of the bsf search
+    /// Saves graph.dot file of the **bfs** search
     Graph,
-    // Saves graph.dot file and tries to compile it using Dot utility
+    /// Saves graph.dot file and tries to compile it using Dot utility
     GraphCmp,
-    // Prints instructions into the console
+    /// Prints instructions into the console
     Instructions,
 }
 
@@ -280,6 +196,8 @@ struct App {
     unicode: bool,
     #[arg(short = 't', long, default_value_t = 4)]
     threads: usize,
+    #[arg(short = 'm', long, default_value_t = false)]
+    memory_optimization: bool,
     #[arg()]
     input_file: String,
 }
@@ -303,7 +221,7 @@ fn main() {
     macro_rules! launch_bfs {
         ($kind: expr) => {
             if respect_holes {
-                let mut callback = bfs::BFSInstructionsCallback::<true>::default();
+                let mut callback = instructions::InstructionsOutputCallback::<true>::default();
                 bfs::launch_bfs::<true>(
                     width,
                     height,
@@ -314,7 +232,7 @@ fn main() {
                 );
                 (callback.instructions, callback.moves)
             } else {
-                let mut callback = bfs::BFSInstructionsCallback::<false>::default();
+                let mut callback = instructions::InstructionsOutputCallback::<false>::default();
                 bfs::launch_bfs::<false>(
                     width,
                     height,
@@ -331,22 +249,34 @@ fn main() {
     macro_rules! launch_astar {
         ($queue: ty) => {
             if respect_holes {
-                let mut callback = bfs::BFSInstructionsCallback::<true>::default();
-                astar::launch_astar::<$queue, true>(width, height, &maps, &mut callback);
+                let mut callback = instructions::InstructionsOutputCallback::<true>::default();
+                astar::launch_astar::<$queue, true>(
+                    width,
+                    height,
+                    &maps,
+                    &mut callback,
+                    app.memory_optimization,
+                );
                 (callback.instructions, callback.moves)
             } else {
-                let mut callback = bfs::BFSInstructionsCallback::<false>::default();
-                astar::launch_astar::<$queue, false>(width, height, &maps, &mut callback);
+                let mut callback = instructions::InstructionsOutputCallback::<false>::default();
+                astar::launch_astar::<$queue, false>(
+                    width,
+                    height,
+                    &maps,
+                    &mut callback,
+                    app.memory_optimization,
+                );
                 (callback.instructions, callback.moves)
             }
         };
     }
 
     let (instructions, moves) = match app.path_gen {
-        PathGenerator::BFSMTCSBS => launch_bfs!(DeltaListKind::CompareAndSwapAtomicBitSet),
-        PathGenerator::BFSSTLHM => launch_bfs!(DeltaListKind::LazyHashMap),
-        PathGenerator::BFSMTABS => launch_bfs!(DeltaListKind::AtomicBitSet),
-        PathGenerator::BFSSTBS => launch_bfs!(DeltaListKind::BitSet),
+        PathGenerator::BFSMTCSBS => launch_bfs!(FourBitDeltaListKind::CompareAndSwapAtomicBitSet),
+        PathGenerator::BFSSTLHM => launch_bfs!(FourBitDeltaListKind::LazyHashMap),
+        PathGenerator::BFSMTABS => launch_bfs!(FourBitDeltaListKind::AtomicBitSet),
+        PathGenerator::BFSSTBS => launch_bfs!(FourBitDeltaListKind::BitSet),
         PathGenerator::ASMD => launch_astar!(ManhattanDistancePriorityQueue),
         PathGenerator::AS2DBFS => {
             if respect_holes {
@@ -356,23 +286,28 @@ fn main() {
             }
         }
         PathGenerator::ASDPMD => launch_astar!(DisparityPunishableManhattanDistancePriorityQueue),
+        PathGenerator::BFS2D => (
+            if respect_holes {
+                launch_bfs_2d::<true>(width, height, &maps)
+            } else {
+                launch_bfs_2d::<false>(width, height, &maps)
+            },
+            0,
+        ),
         PathGenerator::None => (vec![], 0),
     };
-
     match app.output {
-        OutputType::Image => {
-            if respect_holes {
-                img::image::<true>(&maps, &instructions);
-            } else {
-                img::image::<false>(&maps, &instructions)
-            }
-        }
+        OutputType::Image => (if respect_holes {
+            img::image::<true>
+        } else {
+            img::image::<false>
+        })(&maps, &instructions),
         OutputType::Graph | OutputType::GraphCmp => {
-            if respect_holes {
-                graph::graph::<true>(width, height, &maps, &instructions);
+            (if respect_holes {
+                graph::graph::<true>
             } else {
-                graph::graph::<false>(width, height, &maps, &instructions);
-            }
+                graph::graph::<false>
+            })(width, height, &maps, &instructions);
 
             if matches!(app.output, OutputType::GraphCmp) {
                 let process = Command::new("dot")
@@ -386,7 +321,7 @@ fn main() {
             }
         }
         OutputType::Instructions => {
-            bfs::output(&instructions, moves, if app.unicode { 1 } else { 0 });
+            instructions::output(&instructions, moves, if app.unicode { 1 } else { 0 });
         }
     }
 }

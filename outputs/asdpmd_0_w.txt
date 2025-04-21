@@ -1,0 +1,24 @@
+len: 81
+written: 26
+A* time elapsed: 91.2µs
+0 valid: true, 1 valid: true
+vv>^>vv^^>vv
+Moves: 16, Instructions: 12
+len: 81
+written: 26
+A* time elapsed: 73.3µs
+0 valid: true, 1 valid: true
+vv>^>vv^^>vv
+Moves: 16, Instructions: 12
+len: 81
+written: 26
+A* time elapsed: 82µs
+0 valid: true, 1 valid: true
+vv>^>vv^^>vv
+Moves: 16, Instructions: 12
+len: 81
+written: 26
+A* time elapsed: 81.1µs
+0 valid: true, 1 valid: true
+vv>^>vv^^>vv
+Moves: 16, Instructions: 12

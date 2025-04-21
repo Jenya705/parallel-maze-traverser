@@ -1,0 +1,6 @@
+len: 250000
+written: 235665
+BFS time elapsed: 9.4357ms
+0 valid: true, 1 valid: true
+vvvv>vv>^>>v>>>vvvv>v<v<vvvvv<<v<v<vvvv>>vv>>vv><vvv<v>v<<v<^<vv>>vv>>v<vv>>>>vv>>v>>v>vv<<vv<v<vv>^>vv<v<v<^<^<^<v<v>>vvv>>^>>^>^>vv<vv<<<^^<v>vvv<vvv>^>v>v>v>>>>>
+Moves: 236, Instructions: 164

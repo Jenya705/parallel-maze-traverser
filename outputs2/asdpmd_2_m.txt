@@ -1,0 +1,16 @@
+A* time elapsed: 346.8µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v<^<^<<<<^<<vvv>v>>>>vv>>^<<^>v>>v
+Moves: 126, Instructions: 91
+A* time elapsed: 380.2µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v<^<^<<<<^<<vvv>v>>>>vv>>^<<^>v>>v
+Moves: 126, Instructions: 91
+A* time elapsed: 427.2µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v<^<^<<<<^<<vvv>v>>>>vv>>^<<^>v>>v
+Moves: 126, Instructions: 91
+A* time elapsed: 413.3µs
+0 valid: true, 1 valid: true
+>>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v<^<^<<<<^<<vvv>v>>>>vv>>^<<^>v>>v
+Moves: 126, Instructions: 91

@@ -1,0 +1,24 @@
+len: 400
+written: 65
+A* time elapsed: 99.1µs
+0 valid: true, 1 valid: true
+vvv>>>>vv^>v>^^<<^>>vv>vvv<^<v<^<vv>>>>
+Moves: 48, Instructions: 39
+len: 400
+written: 65
+A* time elapsed: 99.7µs
+0 valid: true, 1 valid: true
+vvv>>>>vv^>v>^^<<^>>vv>vvv<^<v<^<vv>>>>
+Moves: 48, Instructions: 39
+len: 400
+written: 65
+A* time elapsed: 97.9µs
+0 valid: true, 1 valid: true
+vvv>>>>vv^>v>^^<<^>>vv>vvv<^<v<^<vv>>>>
+Moves: 48, Instructions: 39
+len: 400
+written: 65
+A* time elapsed: 80.8µs
+0 valid: true, 1 valid: true
+vvv>>>>vv^>v>^^<<^>>vv>vvv<^<v<^<vv>>>>
+Moves: 48, Instructions: 39

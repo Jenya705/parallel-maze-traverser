@@ -1,0 +1,16 @@
+BFS time elapsed: 1.0595ms
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65
+BFS time elapsed: 1.1229ms
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65
+BFS time elapsed: 1.0045ms
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65
+BFS time elapsed: 1.1396ms
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65

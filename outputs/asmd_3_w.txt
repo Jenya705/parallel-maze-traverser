@@ -1,0 +1,24 @@
+len: 250000
+written: 6152
+A* time elapsed: 383.2µs
+0 valid: true, 1 valid: true
+vvvv>vvvv>vv>^>v>>>>>vv<^<v<v>v>^^<v>^v<v<<<v>>>>>>v<v>v<v>>^<^><v>^^>v>^<^>^>^>>v>vvvv>v<vvvvvv<vv>v>v>>vv<v>>^<v<^>^>^v<<^>^^v<<<<<<<vvvvv>vv>>vvvvv<v>v<<v<^<vv>>>>v<vv>vv>vv>vvv^>^v<vvv>^>vvv<v<^^v<^^v<^<v<v>>vvv>>vvv>>>>^>v<<<<v<<<^^<vvvv>>>>>>>^>v<<<<<<<<vvv>^>v>v>v>>>>>^<<^>^^<<^<^<^^<<v<vvvv>>>v<vvvv<<^<vvvv>vv>>>>vv>>v>>vvv<<vv<v<vv>v<<v<<v<v>>>>^>>^>^>vvv<vvv>
+Moves: 406, Instructions: 371
+len: 250000
+written: 6152
+A* time elapsed: 361.9µs
+0 valid: true, 1 valid: true
+vvvv>vvvv>vv>^>v>>>>>vv<^<v<v>v>^^<v>^v<v<<<v>>>>>>v<v>v<v>>^<^><v>^^>v>^<^>^>^>>v>vvvv>v<vvvvvv<vv>v>v>>vv<v>>^<v<^>^>^v<<^>^^v<<<<<<<vvvvv>vv>>vvvvv<v>v<<v<^<vv>>>>v<vv>vv>vv>vvv^>^v<vvv>^>vvv<v<^^v<^^v<^<v<v>>vvv>>vvv>>>>^>v<<<<v<<<^^<vvvv>>>>>>>^>v<<<<<<<<vvv>^>v>v>v>>>>>^<<^>^^<<^<^<^^<<v<vvvv>>>v<vvvv<<^<vvvv>vv>>>>vv>>v>>vvv<<vv<v<vv>v<<v<<v<v>>>>^>>^>^>vvv<vvv>
+Moves: 406, Instructions: 371
+len: 250000
+written: 6152
+A* time elapsed: 363.7µs
+0 valid: true, 1 valid: true
+vvvv>vvvv>vv>^>v>>>>>vv<^<v<v>v>^^<v>^v<v<<<v>>>>>>v<v>v<v>>^<^><v>^^>v>^<^>^>^>>v>vvvv>v<vvvvvv<vv>v>v>>vv<v>>^<v<^>^>^v<<^>^^v<<<<<<<vvvvv>vv>>vvvvv<v>v<<v<^<vv>>>>v<vv>vv>vv>vvv^>^v<vvv>^>vvv<v<^^v<^^v<^<v<v>>vvv>>vvv>>>>^>v<<<<v<<<^^<vvvv>>>>>>>^>v<<<<<<<<vvv>^>v>v>v>>>>>^<<^>^^<<^<^<^^<<v<vvvv>>>v<vvvv<<^<vvvv>vv>>>>vv>>v>>vvv<<vv<v<vv>v<<v<<v<v>>>>^>>^>^>vvv<vvv>
+Moves: 406, Instructions: 371
+len: 250000
+written: 6152
+A* time elapsed: 424.1µs
+0 valid: true, 1 valid: true
+vvvv>vvvv>vv>^>v>>>>>vv<^<v<v>v>^^<v>^v<v<<<v>>>>>>v<v>v<v>>^<^><v>^^>v>^<^>^>^>>v>vvvv>v<vvvvvv<vv>v>v>>vv<v>>^<v<^>^>^v<<^>^^v<<<<<<<vvvvv>vv>>vvvvv<v>v<<v<^<vv>>>>v<vv>vv>vv>vvv^>^v<vvv>^>vvv<v<^^v<^^v<^<v<v>>vvv>>vvv>>>>^>v<<<<v<<<^^<vvvv>>>>>>>^>v<<<<<<<<vvv>^>v>v>v>>>>>^<<^>^^<<^<^<^^<<v<vvvv>>>v<vvvv<<^<vvvv>vv>>>>vv>>v>>vvv<<vv<v<vv>v<<v<<v<v>>>>^>>^>^>vvv<vvv>
+Moves: 406, Instructions: 371

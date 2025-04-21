@@ -1,0 +1,16 @@
+BFS time elapsed: 12.2µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8
+BFS time elapsed: 8.9µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8
+BFS time elapsed: 8.8µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8
+BFS time elapsed: 9.9µs
+0 valid: true, 1 valid: true
+vv>^^>vv
+Moves: 14, Instructions: 8

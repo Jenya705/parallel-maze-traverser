@@ -1,0 +1,6 @@
+len: 10000
+written: 2295
+A* time elapsed: 314.7µs
+0 valid: true, 1 valid: true
+vv>>vv>v<^>>vv>>>^^>v>>>v<<v<v>v>v>^>>v>^<v<v>vv<v<v^>v<<<v>^^^>^^>>>>>v<v<vv>>v<^<^<<v>^>v<<<^<^<v>vv>v>>>>vv>>^^>v>v
+Moves: 142, Instructions: 118

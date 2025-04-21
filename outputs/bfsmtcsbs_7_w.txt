@@ -1,0 +1,16 @@
+len: 90000
+written: 49181
+BFS time elapsed: 2.5334ms
+No solution found.
+len: 90000
+written: 49176
+BFS time elapsed: 2.5587ms
+No solution found.
+len: 90000
+written: 49173
+BFS time elapsed: 2.691ms
+No solution found.
+len: 90000
+written: 49177
+BFS time elapsed: 2.6948ms
+No solution found.

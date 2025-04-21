@@ -1,0 +1,16 @@
+valid: true
+2d-BFS time elapsed: 64.7µs
+vv>^^>vv
+Instructions: 8
+valid: true
+2d-BFS time elapsed: 60.6µs
+vv>^^>vv
+Instructions: 8
+valid: true
+2d-BFS time elapsed: 54µs
+vv>^^>vv
+Instructions: 8
+valid: true
+2d-BFS time elapsed: 56.6µs
+vv>^^>vv
+Instructions: 8

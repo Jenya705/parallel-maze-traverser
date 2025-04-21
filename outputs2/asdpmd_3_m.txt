@@ -1,0 +1,16 @@
+A* time elapsed: 6.1781ms
+0 valid: true, 1 valid: true
+vv>^>v>>>>>vv<vv>vvvv>vv>^^<vv^<v>v<<^^v<v>>v<<<vvvvv^^<^^>vv^^>v>><^>v>v<<vvv>vv>>vvvvv<v>v<^>^<^<^<<vvvv>vv>v<<<v>v<^<v>v>>>>>^<v<vvvv>>>v<vv>vv>^^^^<^<vvvv<^^><^^>^>vvv<vv^>^<v^<vvvv>><vv>>>>vv>>v>>vvv<vv>vv>vv>vvv^>v<^>v^<vvv>^>vv^^>^<<v^<v<^^<vvvvv<v<^<v^<v^<v<vv^^>vv>>v>>vvv<v>>vvv>vv<^>v<<vv<v<^<^^>vvv^<v<vv<^^^<vv>^>vv^<vvv<^<v<<^^<vvvv>>^^^^>>>v^^>><^^>>^<v>^>v>vv<<v>^^<<<v>v<<<<<<vvv^>>v>v^>v>^^v<<>v<<v<^<v>><v>>>>^>>^>^>^^<<^>v>v>v>vv>v>>>><vvv>
+Moves: 606, Instructions: 460
+A* time elapsed: 6.3305ms
+0 valid: true, 1 valid: true
+vv>^>v>>>>>vv<vv>vvvv>vv>^^<vv^<v>v<<^^v<v>>v<<<vvvvv^^<^^>vv^^>v>><^>v>v<<vvv>vv>>vvvvv<v>v<^>^<^<^<<vvvv>vv>v<<<v>v<^<v>v>>>>>^<v<vvvv>>>v<vv>vv>^^^^<^<vvvv<^^><^^>^>vvv<vv^>^<v^<vvvv>><vv>>>>vv>>v>>vvv<vv>vv>vv>vvv^>v<^>v^<vvv>^>vv^^>^<<v^<v<^^<vvvvv<v<^<v^<v^<v<vv^^>vv>>v>>vvv<v>>vvv>vv<^>v<<vv<v<^<^^>vvv^<v<vv<^^^<vv>^>vv^<vvv<^<v<<^^<vvvv>>^^^^>>>v^^>><^^>>^<v>^>v>vv<<v>^^<<<v>v<<<<<<vvv^>>v>v^>v>^^v<<>v<<v<^<v>><v>>>>^>>^>^>^^<<^>v>v>v>vv>v>>>><vvv>
+Moves: 606, Instructions: 460
+A* time elapsed: 6.6213ms
+0 valid: true, 1 valid: true
+vv>^>v>>>>>vv<vv>vvvv>vv>^^<vv^<v>v<<^^v<v>>v<<<vvvvv^^<^^>vv^^>v>><^>v>v<<vvv>vv>>vvvvv<v>v<^>^<^<^<<vvvv>vv>v<<<v>v<^<v>v>>>>>^<v<vvvv>>>v<vv>vv>^^^^<^<vvvv<^^><^^>^>vvv<vv^>^<v^<vvvv>><vv>>>>vv>>v>>vvv<vv>vv>vv>vvv^>v<^>v^<vvv>^>vv^^>^<<v^<v<^^<vvvvv<v<^<v^<v^<v<vv^^>vv>>v>>vvv<v>>vvv>vv<^>v<<vv<v<^<^^>vvv^<v<vv<^^^<vv>^>vv^<vvv<^<v<<^^<vvvv>>^^^^>>>v^^>><^^>>^<v>^>v>vv<<v>^^<<<v>v<<<<<<vvv^>>v>v^>v>^^v<<>v<<v<^<v>><v>>>>^>>^>^>^^<<^>v>v>v>vv>v>>>><vvv>
+Moves: 606, Instructions: 460
+A* time elapsed: 7.0293ms
+0 valid: true, 1 valid: true
+vv>^>v>>>>>vv<vv>vvvv>vv>^^<vv^<v>v<<^^v<v>>v<<<vvvvv^^<^^>vv^^>v>><^>v>v<<vvv>vv>>vvvvv<v>v<^>^<^<^<<vvvv>vv>v<<<v>v<^<v>v>>>>>^<v<vvvv>>>v<vv>vv>^^^^<^<vvvv<^^><^^>^>vvv<vv^>^<v^<vvvv>><vv>>>>vv>>v>>vvv<vv>vv>vv>vvv^>v<^>v^<vvv>^>vv^^>^<<v^<v<^^<vvvvv<v<^<v^<v^<v<vv^^>vv>>v>>vvv<v>>vvv>vv<^>v<<vv<v<^<^^>vvv^<v<vv<^^^<vv>^>vv^<vvv<^<v<<^^<vvvv>>^^^^>>>v^^>><^^>>^<v>^>v>vv<<v>^^<<<v>v<<<<<<vvv^>>v>v^>v>^^v<<>v<<v<^<v>><v>>>>^>>^>^>^^<<^>v>v>v>vv>v>>>><vvv>
+Moves: 606, Instructions: 460

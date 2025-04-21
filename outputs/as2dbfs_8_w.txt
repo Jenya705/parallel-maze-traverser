@@ -1,0 +1,24 @@
+len: 506250000
+written: 1729
+A* time elapsed: 19.3841ms
+0 valid: true, 1 valid: true
+vvvv>vvv>vv>vv>v>>vv>>>v>>>>v>>>vvvvv>v>>vvv>>^^>>v>>v<vv>vvv>vvv>>>vvv>>v>>vv>v>vv>vvv>vvvv^<v^^>>vv>v>>vv>vv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>>>>>vvvvv>>v>vvvv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>>vv>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<v<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v<^<v<<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvvv<<v<vvvvvv<<v>v>v<vvvv<vvv<vv<v>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>>>>>^^^^^>>>vv>v>>^>>v>>>v>>>^^>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>>>>^^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>
+Moves: 774, Instructions: 712
+len: 506250000
+written: 1729
+A* time elapsed: 18.9343ms
+0 valid: true, 1 valid: true
+vvvv>vvv>vv>vv>v>>vv>>>v>>>>v>>>vvvvv>v>>vvv>>^^>>v>>v<vv>vvv>vvv>>>vvv>>v>>vv>v>vv>vvv>vvvv^<v^^>>vv>v>>vv>vv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>>>>>vvvvv>>v>vvvv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>>vv>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<v<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v<^<v<<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvvv<<v<vvvvvv<<v>v>v<vvvv<vvv<vv<v>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>>>>>^^^^^>>>vv>v>>^>>v>>>v>>>^^>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>>>>^^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>
+Moves: 774, Instructions: 712
+len: 506250000
+written: 1729
+A* time elapsed: 19.0111ms
+0 valid: true, 1 valid: true
+vvvv>vvv>vv>vv>v>>vv>>>v>>>>v>>>vvvvv>v>>vvv>>^^>>v>>v<vv>vvv>vvv>>>vvv>>v>>vv>v>vv>vvv>vvvv^<v^^>>vv>v>>vv>vv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>>>>>vvvvv>>v>vvvv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>>vv>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<v<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v<^<v<<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvvv<<v<vvvvvv<<v>v>v<vvvv<vvv<vv<v>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>>>>>^^^^^>>>vv>v>>^>>v>>>v>>>^^>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>>>>^^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>
+Moves: 774, Instructions: 712
+len: 506250000
+written: 1729
+A* time elapsed: 19.6876ms
+0 valid: true, 1 valid: true
+vvvv>vvv>vv>vv>v>>vv>>>v>>>>v>>>vvvvv>v>>vvv>>^^>>v>>v<vv>vvv>vvv>>>vvv>>v>>vv>v>vv>vvv>vvvv^<v^^>>vv>v>>vv>vv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>>>>>vvvvv>>v>vvvv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>>vv>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<v<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v<^<v<<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvvv<<v<vvvvvv<<v>v>v<vvvv<vvv<vv<v>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>>>>>^^^^^>>>vv>v>>^>>v>>>v>>>^^>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>>>>^^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>
+Moves: 774, Instructions: 712

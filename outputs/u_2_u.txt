@@ -1,0 +1,8 @@
+BFS time elapsed: 1.092ms
+0 valid: true, 1 valid: true
+→→↓↓↓→→→↑↑→→→↓←↓→↓→↓←↓←↑←←←←↑←←↓↓←↓→↓→→→→↓↓→→↑↑↑→↑↑→→→→→↓←↓←↓↓→→↓
+Moves: 92, Instructions: 65
+BFS time elapsed: 1.0701ms
+0 valid: true, 1 valid: true
+→→↓↓↓→→→↑↑→→→↓←↓→↓→↓←↓←↑←←←←↑←←↓↓←↓→↓→→→→↓↓→→↑↑↑→↑↑→→→→→↓←↓←↓↓→→↓
+Moves: 92, Instructions: 65

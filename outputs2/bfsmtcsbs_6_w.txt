@@ -1,0 +1,4 @@
+len: 3906250000
+written: 698023
+BFS time elapsed: 433.9836ms
+No solution found.

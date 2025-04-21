@@ -1,0 +1,12 @@
+len: 400
+written: 175
+A* time elapsed: 120.4µs
+0 valid: true, 1 valid: true
+v>v>v>>vv^>v>^^<<^>>>vvv<^<v<^<vv>>>>
+Moves: 52, Instructions: 37
+len: 400
+written: 175
+A* time elapsed: 134.7µs
+0 valid: true, 1 valid: true
+v>v>v>>vv^>v>^^<<^>>>vvv<^<v<^<vv>>>>
+Moves: 52, Instructions: 37

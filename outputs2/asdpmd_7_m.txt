@@ -1,0 +1,8 @@
+A* time elapsed: 3.4283ms
+No solution found.
+A* time elapsed: 3.5677ms
+No solution found.
+A* time elapsed: 3.1165ms
+No solution found.
+A* time elapsed: 3.3929ms
+No solution found.

@@ -1,7 +1,10 @@
 use std::{
     cell::SyncUnsafeCell,
     ops::Deref,
-    sync::{Arc, Condvar, Mutex},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Condvar, Mutex,
+    },
     time::Instant,
 };
 
@@ -9,14 +12,14 @@ use crate::{
     calculate_visited_index,
     delta_list::{
         AsyncDeltaList, AsyncDeltaListAccessor, AtomicBitSetDeltaList, BitSetDeltaList,
-        CompareAndSwapAtomicBitSetDeltaList, DeltaList, DeltaListKind, HashMapLazyDeltaList,
+        CompareAndSwapAtomicBitSetDeltaList, DeltaList, FourBitDeltaListKind, HashMapLazyDeltaList,
     },
     end_state,
-    instructions::{apply_instruction, apply_instructions, ALL_INSTRUCTIONS},
+    instructions::{apply_instruction, apply_instructions, maximum_instructions, ALL_INSTRUCTIONS},
     Coordinate, Map,
 };
 
-pub trait BFSCallback {
+pub trait Callback {
     fn callback(
         &mut self,
         width: usize,
@@ -27,129 +30,13 @@ pub trait BFSCallback {
     );
 }
 
-#[derive(Default)]
-pub struct BFSInstructionsCallback<const RESPECT_HOLES: bool> {
-    pub instructions: Vec<[bool; 2]>,
-    pub moves: usize,
-}
-
-fn output_dir(dir: [bool; 2], style: usize) {
-    let to_output = match dir {
-        [true, true] => [">", "→"],
-        [true, false] => ["<", "←"],
-        [false, true] => ["v", "↓"],
-        [false, false] => ["^", "↑"],
-    };
-
-    print!("{}", to_output[style]);
-}
-
-pub fn output(instructions: &Vec<[bool; 2]>, moves: usize, style: usize) {
-    if instructions.is_empty() {
-        println!("No solution found.");
-        return;
-    }
-
-    for &dir in instructions {
-        output_dir(dir, style);
-    }
-
-    println!();
-    println!("Moves: {}, Instructions: {}", moves, instructions.len());
-}
-
-impl<const RESPECT_HOLES: bool> BFSCallback for BFSInstructionsCallback<RESPECT_HOLES> {
-    fn callback(
-        &mut self,
-        width: usize,
-        height: usize,
-        tiles_count: usize,
-        maps: &[Map; 2],
-        list: &impl DeltaList,
-    ) {
-        let mut dirs = vec![];
-        let mut state = [
-            width as Coordinate - 1,
-            height as Coordinate - 1,
-            width as Coordinate - 1,
-            height as Coordinate - 1,
-        ];
-
-        while state != [0; 4] {
-            let delta_i = list.get_bits(calculate_visited_index(state, width, tiles_count));
-
-            if delta_i == [false; 4] {
-                return;
-            }
-
-            let mut delta = [0; 4];
-
-            let r = if delta_i[3] { 1 } else { -1 };
-
-            let i1 = if delta_i[2] { 0 } else { 1 };
-            let i2 = if delta_i[2] { 2 } else { 3 };
-
-            if delta_i[0] {
-                delta[i1] = r;
-            }
-            if delta_i[1] {
-                delta[i2] = r;
-            }
-
-            if RESPECT_HOLES {
-                for i in 0..2 {
-                    if state[i * 2] == 0 && state[i * 2 + 1] == 0 {
-                        for &[x, y] in maps[i].holes_placement.iter() {
-                            let mut new_state = state;
-                            new_state[i * 2] = x;
-                            new_state[i * 2 + 1] = y;
-                            if list.get_bits(calculate_visited_index(new_state, width, tiles_count))
-                                == delta_i
-                            {
-                                state[i * 2] = x;
-                                state[i * 2 + 1] = y;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            for i in 0..4 {
-                if delta[i] != 0 {
-                    self.moves += 1;
-                }
-                state[i] -= delta[i];
-            }
-
-            dirs.push([delta_i[2], delta_i[3]]);
-        }
-
-        self.instructions.reserve(dirs.len());
-        for dir in dirs.into_iter().rev() {
-            self.instructions.push(dir);
-        }
-
-        let mut s0 = [0; 2];
-        let mut s1 = [0; 2];
-        apply_instructions::<RESPECT_HOLES>(self.instructions.iter().cloned(), &maps[0], &mut s0);
-        apply_instructions::<RESPECT_HOLES>(self.instructions.iter().cloned(), &maps[1], &mut s1);
-
-        println!(
-            "0 valid: {}, 1 valid: {}",
-            s0 == [width as Coordinate - 1, height as Coordinate - 1],
-            s1 == [width as Coordinate - 1, height as Coordinate - 1]
-        );
-    }
-}
-
 pub fn launch_bfs<const RESPECT_HOLES: bool>(
     width: Coordinate,
     height: Coordinate,
     maps: Arc<[Map; 2]>,
     threads: usize,
-    kind: DeltaListKind,
-    callback: &mut impl BFSCallback,
+    kind: FourBitDeltaListKind,
+    callback: &mut impl Callback,
 ) {
     let start = Instant::now();
 
@@ -168,7 +55,7 @@ pub fn launch_bfs<const RESPECT_HOLES: bool>(
             {
                 crate::delta_list::written_start(states_count);
             }
-            list.set(0, 1);
+            list.set::<true>(0, 1);
             multi_threaded_bfs::<RESPECT_HOLES>(
                 width_u,
                 height_u,
@@ -200,7 +87,7 @@ pub fn launch_bfs<const RESPECT_HOLES: bool>(
             {
                 crate::delta_list::written_start(states_count);
             }
-            list.set(0, 1);
+            list.set::<true>(0, 1);
             single_threaded_bfs::<RESPECT_HOLES>(
                 width_u,
                 height_u,
@@ -219,16 +106,16 @@ pub fn launch_bfs<const RESPECT_HOLES: bool>(
     }
 
     match kind {
-        DeltaListKind::BitSet => {
-            bit_set_launch!(BitSetDeltaList);
+        FourBitDeltaListKind::BitSet => {
+            bit_set_launch!(BitSetDeltaList::<4>);
         }
-        DeltaListKind::LazyHashMap => {
+        FourBitDeltaListKind::LazyHashMap => {
             bit_set_launch!(HashMapLazyDeltaList);
         }
-        DeltaListKind::AtomicBitSet => {
+        FourBitDeltaListKind::AtomicBitSet => {
             async_bit_set_launch!(AtomicBitSetDeltaList);
         }
-        DeltaListKind::CompareAndSwapAtomicBitSet => {
+        FourBitDeltaListKind::CompareAndSwapAtomicBitSet => {
             async_bit_set_launch!(CompareAndSwapAtomicBitSetDeltaList);
         }
     }
@@ -243,8 +130,12 @@ fn single_threaded_bfs<const RESPECT_HOLES: bool>(
     list: &mut impl DeltaList,
 ) {
     let mut tasks = vec![];
-    tasks.push([0, 0, 0, 0]);
+    tasks.push([0; 4]);
     let mut output = vec![];
+
+    // Anhand des Lemmas über die maximale Länge einer optimalen Lösung
+    // kann die Tiefe der Suche begrenzt werden
+    let mut instructions_left = maximum_instructions(maps);
 
     while list.get(end) == 0 {
         single_layer_bfs::<RESPECT_HOLES>(
@@ -260,9 +151,10 @@ fn single_threaded_bfs<const RESPECT_HOLES: bool>(
 
         std::mem::swap(&mut tasks, &mut output);
 
-        if tasks.is_empty() {
+        if tasks.is_empty() || instructions_left == 0 {
             return;
         }
+        instructions_left -= 1;
     }
 }
 
@@ -291,6 +183,8 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
 
     let mut notifiers = vec![];
 
+    let done = Arc::new(AtomicBool::new(false));
+
     for i in 0..threads {
         let thread_tasks = Arc::clone(&thread_tasks);
         let thread_outputs = Arc::clone(&thread_outputs);
@@ -302,8 +196,11 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
         let maps = Arc::clone(&maps);
         let list = Arc::clone(&list);
 
+        let done = Arc::clone(&done);
+
         std::thread::spawn(move || loop {
             {
+                // Dieses Worker-Thread wartet auf das Main-Thread. 
                 drop(
                     notifier
                         .1
@@ -312,6 +209,15 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
                 );
             }
 
+            // Damit Worker-Threads nicht ständig läuften.
+            if done.load(Ordering::Relaxed) {
+                break;
+            }
+
+            // SAFETY: 
+            // - each thread access only their vector i
+            // - notifiers control whether the main thread and the worker threads access the data,
+            //   thus preventing any parallel access between these threads.
             let tasks = unsafe { thread_tasks[i].get().as_mut().unwrap() };
             let output = unsafe { thread_outputs[i].get().as_mut().unwrap() };
 
@@ -328,20 +234,32 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
                 end,
             );
 
-            {
+            { 
                 *notifier.0.lock().unwrap() = false;
+                // Main-Thread registriert dieses Worker-Thread has seine Aufgabe erfüllt.
                 notifier.1.notify_all();
             }
         });
     }
 
-    while list.get(end) == 0 {
-        for notifier in &notifiers {
-            let mut guard = notifier.0.lock().unwrap();
-            *guard = true;
-            notifier.1.notify_all();
-        }
+    macro_rules! notify_threads {
+        () => {
+            for notifier in &notifiers {
+                let mut guard = notifier.0.lock().unwrap();
+                *guard = true;
+                notifier.1.notify_all();
+            }
+        };
+    }
 
+    // Anhand des Lemmas über die maximale Länge einer optimalen Lösung
+    // kann die Tiefe der Suche begrenzt werden
+    let mut instructions_left = maximum_instructions(&maps);
+
+    while list.get(end) == 0 {
+        notify_threads!();
+
+        // Auf die Worker-Threads warten
         for notifier in &notifiers {
             let guard = notifier.0.lock().unwrap();
             drop(notifier.1.wait_while(guard, |run| *run));
@@ -349,15 +267,17 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
 
         let mut len = 0;
         for i in 0..threads {
+            // SAFETY: see worker thread explanation
             let input = unsafe { thread_tasks[i].get().as_mut().unwrap() };
             let output = unsafe { thread_outputs[i].get().as_mut().unwrap() };
             std::mem::swap(input, output);
             len += input.len();
         }
 
-        if len == 0 {
-            return;
+        if len == 0 || instructions_left == 0 {
+            break;
         }
+        instructions_left -= 1;
 
         let avg_len = len / threads;
 
@@ -388,10 +308,13 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
             }
         }
     }
+
+    done.store(true, Ordering::Relaxed);
+    notify_threads!();
 }
 
 #[inline(always)]
-pub fn validate_capacity(tasks: &Vec<[Coordinate; 4]>, output: &mut Vec<[Coordinate; 4]>) {
+pub fn ensure_capacity(tasks: &Vec<[Coordinate; 4]>, output: &mut Vec<[Coordinate; 4]>) {
     output.reserve(tasks.len() * 4);
 }
 
@@ -401,19 +324,20 @@ pub fn single_layer_bfs<const RESPECT_HOLES: bool>(
     output: &mut Vec<[Coordinate; 4]>,
     maps: &[Map; 2],
     width: usize,
-    _height: usize,
+    height: usize,
     tiles_count: usize,
     delta_list: &mut impl DeltaList,
     _end: usize,
 ) {
-    validate_capacity(tasks, output);
+    ensure_capacity(tasks, output);
 
     for state in tasks.drain(..) {
-        // SAFETY: validate_capacity was called
+        // SAFETY: ensure_capacity was called
         unsafe {
-            handle_single_state::<RESPECT_HOLES>(
+            handle_single_4d_state::<RESPECT_HOLES>(
                 maps,
                 width,
+                height,
                 tiles_count,
                 state,
                 output,
@@ -425,16 +349,20 @@ pub fn single_layer_bfs<const RESPECT_HOLES: bool>(
 
 /// # Safety
 /// the given state must be valid and the output vector must be large enough to fit 4 elements without any allocations
-#[inline(always)]
-pub unsafe fn handle_single_state<const RESPECT_HOLES: bool>(
+#[inline(never)]
+pub unsafe fn handle_single_4d_state<const RESPECT_HOLES: bool>(
     maps: &[Map; 2],
     width: usize,
+    height: usize,
     tiles_count: usize,
     state: [Coordinate; 4],
     output: &mut Vec<[Coordinate; 4]>,
     delta_list: &mut impl DeltaList,
 ) {
-    let mut handle_non_adjusted = |delta_i: u8, non_adjusted: [i16; 4]| {
+    // Nimmt den neuen ohne Grubewirkung Zustand und
+    // - guckt an, ob der Zustand in einer Grube ist
+    // - speichert den Zustand
+    let mut handle_non_adjusted = |delta_i: u8, non_adjusted: [Coordinate; 4]| {
         if non_adjusted == state {
             return;
         }
@@ -460,34 +388,46 @@ pub unsafe fn handle_single_state<const RESPECT_HOLES: bool>(
 
         let adjusted_i = calculate_visited_index(adjusted, width, tiles_count);
 
-        if delta_list.set(adjusted_i, delta_i) {
-            if RESPECT_HOLES {
-                delta_list.set(
-                    calculate_visited_index(non_adjusted, width, tiles_count),
-                    delta_i,
-                );
+        if delta_list.set::<false>(adjusted_i, delta_i) {
+            let non_adjusted_i = calculate_visited_index(non_adjusted, width, tiles_count);
+
+            if RESPECT_HOLES && (non_adjusted_i != adjusted_i) {
+                delta_list.set::<true>(non_adjusted_i, delta_i);
             }
+
             output.as_mut_ptr().add(output.len()).write(adjusted);
             output.set_len(output.len() + 1);
         }
     };
+
+    // Sind die gegebene Positionen am Ende?
+    let state0end = state[1] == height as Coordinate - 1 && state[0] == width as Coordinate - 1;
+    let state1end = state[3] == height as Coordinate - 1 && state[2] == width as Coordinate - 1;
 
     let i0h = maps[0].horizontal_wall_index(state[0], state[1]);
     let i0v = maps[0].vertical_wall_index(state[0], state[1]);
     let i1h = maps[1].horizontal_wall_index(state[2], state[3]);
     let i1v = maps[1].vertical_wall_index(state[2], state[3]);
 
-    let left_wall_0 = (!maps[0].vertical_walls.contains_unchecked(i0v)) as Coordinate;
-    let left_wall_1 = (!maps[1].vertical_walls.contains_unchecked(i1v)) as Coordinate;
+    // Gibt es beim Gänger i eine Wand in diese Richtung?
+    // Falls er schon am Ende ist, dann ist er von theoretischen Wänden blockiert. 
+    let left_wall_0 = (!maps[0].vertical_walls.contains_unchecked(i0v) && !state0end) as Coordinate;
+    let left_wall_1 = (!maps[1].vertical_walls.contains_unchecked(i1v) && !state1end) as Coordinate;
 
-    let right_wall_0 = (!maps[0].vertical_walls.contains_unchecked(i0v + 1)) as Coordinate;
-    let right_wall_1 = (!maps[1].vertical_walls.contains_unchecked(i1v + 1)) as Coordinate;
+    let right_wall_0 =
+        (!maps[0].vertical_walls.contains_unchecked(i0v + 1) && !state0end) as Coordinate;
+    let right_wall_1 =
+        (!maps[1].vertical_walls.contains_unchecked(i1v + 1) && !state1end) as Coordinate;
 
-    let top_wall_0 = (!maps[0].horizontal_walls.contains_unchecked(i0h)) as Coordinate;
-    let top_wall_1 = (!maps[1].horizontal_walls.contains_unchecked(i1h)) as Coordinate;
+    let top_wall_0 =
+        (!maps[0].horizontal_walls.contains_unchecked(i0h) && !state0end) as Coordinate;
+    let top_wall_1 =
+        (!maps[1].horizontal_walls.contains_unchecked(i1h) && !state1end) as Coordinate;
 
-    let bottom_wall_0 = (!maps[0].horizontal_walls.contains_unchecked(i0h + 1)) as Coordinate;
-    let bottom_wall_1 = (!maps[1].horizontal_walls.contains_unchecked(i1h + 1)) as Coordinate;
+    let bottom_wall_0 =
+        (!maps[0].horizontal_walls.contains_unchecked(i0h + 1) && !state0end) as Coordinate;
+    let bottom_wall_1 =
+        (!maps[1].horizontal_walls.contains_unchecked(i1h + 1) && !state1end) as Coordinate;
 
     // d = 1 & r = -1
     let delta_0 = [1 & left_wall_0, 1 & left_wall_1];
@@ -533,28 +473,166 @@ pub unsafe fn handle_single_state<const RESPECT_HOLES: bool>(
     handle_non_adjusted(delta_3_i as u8, non_adjusted_3);
 }
 
+pub fn launch_bfs_2d<const RESPECT_HOLES: bool>(
+    width: Coordinate,
+    height: Coordinate,
+    maps: &[Map; 2],
+) -> Vec<[bool; 2]> {
+    let timer = Instant::now();
+
+    let mut instructions = vec![];
+
+    let mut tasks = vec![];
+    let mut output = vec![];
+
+    let width_u = width as usize;
+    let height_u = height as usize;
+
+    let mut list = BitSetDeltaList::<3>::inner_new(width_u * height_u);
+
+    if bfs_2d::<RESPECT_HOLES>(&mut tasks, &mut output, [0; 2], &maps[0], &mut list) {
+        bfs_2d_reconstruction::<RESPECT_HOLES>(&list, &maps[0], [0; 2], &mut instructions);
+        let mut start_state = [0; 2];
+        for &instruction in instructions.iter() {
+            apply_instruction::<RESPECT_HOLES>(instruction, &maps[1], &mut start_state, false);
+        }
+
+        if start_state != [width - 1, height - 1] {
+            list.inner_clear();
+            if bfs_2d::<RESPECT_HOLES>(&mut tasks, &mut output, start_state, &maps[1], &mut list) {
+                bfs_2d_reconstruction::<RESPECT_HOLES>(
+                    &list,
+                    &maps[1],
+                    start_state,
+                    &mut instructions,
+                );
+            } else {
+                instructions.clear();
+            }
+        }
+    }
+
+    println!("2d-BFS time elapsed: {:?}", timer.elapsed());
+
+    instructions
+}
+
+pub fn bfs_2d<const RESPECT_HOLES: bool>(
+    tasks: &mut Vec<[Coordinate; 2]>,
+    output: &mut Vec<[Coordinate; 2]>,
+    start_state: [Coordinate; 2],
+    map: &Map,
+    list: &mut BitSetDeltaList<3>,
+) -> bool {
+    tasks.clear();
+    output.clear();
+
+    // [x_dimension, direction, written]
+
+    let width = map.width as usize;
+
+    list.inner_set_bits::<true>(Map::tile_index_with_vec(start_state, width), [true; 3]);
+    tasks.push(start_state);
+
+    let end = Map::tile_index_with_vec([map.width - 1, map.height - 1], width);
+
+    loop {
+        if tasks.is_empty() {
+            break false;
+        }
+
+        // Aus jedem Zustand können maximal 3 neue Zustände erzeugt
+        output.reserve(tasks.len() * 3);
+        for task in tasks.drain(..) {
+            for instruction in ALL_INSTRUCTIONS {
+                let mut state = task;
+                apply_instruction::<RESPECT_HOLES>(instruction, map, &mut state, false);
+
+                if list.inner_set_bits::<false>(
+                    Map::tile_index_with_vec(state, width),
+                    [instruction[0], instruction[1], true],
+                ) {
+                    output.push(state);
+                }
+            }
+        }
+
+        // Das 3. Bit besagt, ob das Element leer ist. 
+        if list.inner_get_bit(end, 2) {
+            break true;
+        }
+
+        std::mem::swap(output, tasks);
+    }
+}
+
+pub fn bfs_2d_reconstruction<const RESPECT_HOLES: bool>(
+    list: &BitSetDeltaList<3>,
+    map: &Map,
+    start_state: [Coordinate; 2],
+    instructions: &mut Vec<[bool; 2]>,
+) {
+    let mut dirs = vec![];
+
+    let width = map.width as usize;
+
+    let mut state = [map.width - 1, map.height - 1];
+
+    while state != start_state {
+        let delta_i = list.inner_get_bits(Map::tile_index_with_vec(state, width));
+
+        if RESPECT_HOLES && state == [0; 2] {
+            for &hole_position in map.holes_placement.iter() {
+                if list.inner_get_bit(Map::tile_index_with_vec(hole_position, width), 2) {
+                    state = hole_position;
+                    break;
+                }
+            }
+        }
+
+        apply_instruction::<false>([delta_i[0], !delta_i[1]], map, &mut state, false);
+
+        dirs.push([delta_i[0], delta_i[1]]);
+    }
+
+    let i = instructions.len();
+    instructions.reserve(dirs.len());
+    for dir in dirs.into_iter().rev() {
+        instructions.push(dir);
+    }
+
+    let mut state = start_state;
+    apply_instructions::<RESPECT_HOLES>(instructions[i..].iter().cloned(), map, &mut state);
+    println!("valid: {}", state == [map.width - 1, map.height - 1]);
+}
+
 pub fn bfs_2d_distances<const RESPECT_HOLES: bool, const DEFAULT_VALUE: usize>(
+    tasks: &mut Vec<[Coordinate; 2]>,
+    output: &mut Vec<[Coordinate; 2]>,
     start_state: [Coordinate; 2],
     width: Coordinate,
     map: &Map,
     distances: &mut [usize],
+    max_dist: &mut usize,
 ) {
-    let mut tasks = vec![];
-    let mut output = vec![];
+    tasks.clear();
+    output.clear();
     tasks.push(start_state);
 
-    let index =
-        |state: [i16; 2]| -> usize { state[1] as usize * width as usize + state[0] as usize };
-
-    distances[index(start_state)] = 0;
+    distances[Map::tile_index_with_vec(start_state, width as usize)] = 0;
 
     for dist in 1.. {
         output.reserve(tasks.len() * 3);
         for task in tasks.drain(..) {
             for instruction in ALL_INSTRUCTIONS {
                 let mut state = task;
-                apply_instruction::<RESPECT_HOLES>(instruction, map, &mut state);
-                let i = index(state);
+                let visited_hole =
+                    apply_instruction::<RESPECT_HOLES>(instruction, map, &mut state, false);
+                // if RESPECT_HOLES is false then visited_hole is always false (i.e. no need to check it in the runtime)
+                if RESPECT_HOLES && visited_hole {
+                    continue;
+                }
+                let i = Map::tile_index_with_vec(state, width as usize);
                 let i_dist = &mut distances[i];
                 if *i_dist == DEFAULT_VALUE {
                     *i_dist = dist;
@@ -563,9 +641,10 @@ pub fn bfs_2d_distances<const RESPECT_HOLES: bool, const DEFAULT_VALUE: usize>(
             }
         }
 
-        std::mem::swap(&mut tasks, &mut output);
+        std::mem::swap(tasks, output);
 
         if tasks.is_empty() {
+            *max_dist = dist - 1;
             break;
         }
     }

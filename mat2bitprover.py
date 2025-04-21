@@ -42,6 +42,6 @@ for t in tested:
     c+=t
 
 if c != 13:
-    print("bad prover")
+    print("failed")
 else:
-    print("okay")
+    print("success")

@@ -1,0 +1,24 @@
+len: 250000
+written: 235671
+BFS time elapsed: 10.0107ms
+0 valid: true, 1 valid: true
+vvvv>vv>^>>>vvvv>>>>v<v<vvvvv<<v<v<vvvv>>vv>>vv><vvv<v>v<<v<^<vv>>vv>>v<vv>>>>vv>>v>>v>vv<<vv<v<vv>^>vv<v<v<^<^<^<v<v>>vvv>>^>>^>^>vvv<v<<<^^<v>vvv<vvv>^>v>v>v>>>>>
+Moves: 242, Instructions: 164
+len: 250000
+written: 235671
+BFS time elapsed: 10.303ms
+0 valid: true, 1 valid: true
+vvvv>vv>^>>v>vvvv>>>v<vvv<vvv<<v<v<vvvv>>vv>>vv><vvv<v>v<<v<^<vv>>vv>>v<vv>>>>vv>>v>>v>vv<<vv<v<vv>^>vv<v<v<^<^<^<v<v>>vvv>>^>>^>^>vv<vv<<<^^<v>vvv<vvv>^>v>v>v>>>>>
+Moves: 236, Instructions: 164
+len: 250000
+written: 235671
+BFS time elapsed: 10.186ms
+0 valid: true, 1 valid: true
+vvvv>vv>^>>v>>>vvvv>v<v<vvvvv<<v<v<vvvv>>vv>>vv><vvv<v>v<<v<^<vv>>vv>>v<vv>>>>vv>>v>>v>vv<<vv<v<vv>^>vv<v<v<^<^<^<v<v>>vvv>>^>>^>vvvv<<<^>>^<^v>vvv<vvv>^>v>v>v>>>>>
+Moves: 240, Instructions: 164
+len: 250000
+written: 235671
+BFS time elapsed: 9.9735ms
+0 valid: true, 1 valid: true
+vvvv>vv>^>>v>>>vvvv>v<v<vvvvv<<v<v<vvvv>>vv>>vv><vvv<v>v<<v<^<vv>vv>>>v<vv>>>>vv>>v>>v>vv<<vv<v<vv>^>vv<v<v<^<^<^<v<v>>vvv>>^>vvv>^<v<<<^>>^<^v>vvv<vvv>^>v>v>v>>>>>
+Moves: 240, Instructions: 164

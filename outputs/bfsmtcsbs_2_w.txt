@@ -1,0 +1,24 @@
+len: 10000
+written: 8265
+BFS time elapsed: 828.4µs
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65
+len: 10000
+written: 8264
+BFS time elapsed: 783µs
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65
+len: 10000
+written: 8267
+BFS time elapsed: 846.6µs
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<vv>vv<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65
+len: 10000
+written: 8270
+BFS time elapsed: 939.2µs
+0 valid: true, 1 valid: true
+>>vvv>>>^^>>>v<v>v>v<v<^<<<<^<<vv<v>v>>>>vv>>^^^>^^>>>>>v<v<vv>>v
+Moves: 92, Instructions: 65

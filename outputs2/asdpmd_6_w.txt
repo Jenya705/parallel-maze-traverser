@@ -1,0 +1,4 @@
+len: 3906250000
+written: 708997
+A* time elapsed: 81.8457ms
+No solution found.

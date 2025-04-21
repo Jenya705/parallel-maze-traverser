@@ -1,0 +1,16 @@
+A* time elapsed: 9.8µs
+0 valid: true, 1 valid: true
+vv>^>^>vv
+Moves: 14, Instructions: 9
+A* time elapsed: 10.7µs
+0 valid: true, 1 valid: true
+vv>^>^>vv
+Moves: 14, Instructions: 9
+A* time elapsed: 10.3µs
+0 valid: true, 1 valid: true
+vv>^>^>vv
+Moves: 14, Instructions: 9
+A* time elapsed: 9.4µs
+0 valid: true, 1 valid: true
+vv>^>^>vv
+Moves: 14, Instructions: 9

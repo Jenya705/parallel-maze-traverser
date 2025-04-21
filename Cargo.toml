@@ -7,6 +7,7 @@ edition = "2021"
 fixedbitset = "0.5.7"
 image = "0.25.5"
 clap = { version = "4.5.23", features = ["derive"] }
+rustc-hash = "2.1.1"
 
 [features]
 written_count = []

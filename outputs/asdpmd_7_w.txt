@@ -1,0 +1,16 @@
+len: 90000
+written: 49467
+A* time elapsed: 2.8885ms
+No solution found.
+len: 90000
+written: 49467
+A* time elapsed: 2.6815ms
+No solution found.
+len: 90000
+written: 49467
+A* time elapsed: 2.6917ms
+No solution found.
+len: 90000
+written: 49467
+A* time elapsed: 2.7097ms
+No solution found.

@@ -1,0 +1,12 @@
+valid: true
+2d-BFS time elapsed: 101.3µs
+No solution found.
+valid: true
+2d-BFS time elapsed: 84.5µs
+No solution found.
+valid: true
+2d-BFS time elapsed: 78.6µs
+No solution found.
+valid: true
+2d-BFS time elapsed: 107.1µs
+No solution found.
