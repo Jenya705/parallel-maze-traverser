@@ -4,6 +4,8 @@ use image::{Rgb, RgbImage};
 
 use crate::{instructions::collect_positions2d, Coordinate, Map};
 
+/// Generiert zwei Bilder von den beiden gegebenen Labyrinthen. 
+/// Markiert auf den Bildern die Positionen, die von den Gängern besucht wurden.
 pub fn image<const RESPECT_HOLES: bool>(maps: &[Map; 2], instructions: &Vec<[bool; 2]>) {
     for (i, map) in maps.iter().enumerate() {
         let img = gen_image(

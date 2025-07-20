@@ -6,6 +6,8 @@ use std::{
 use fixedbitset::FixedBitSet;
 use rustc_hash::FxHashMap;
 
+/// Gibt eine Zahl mit den gegebenen Bits zurück
+#[inline(always)]
 fn bits2val(bits: [bool; 4]) -> u8 {
     0 | ((bits[0] as u8) << 3)
         | ((bits[1] as u8) << 2)
@@ -13,6 +15,8 @@ fn bits2val(bits: [bool; 4]) -> u8 {
         | ((bits[3] as u8) << 0)
 }
 
+/// Gibt 4 Bits einer Zahl zurück
+#[inline(always)]
 fn val2bits(val: u8) -> [bool; 4] {
     [
         val & 0b1000 != 0,
@@ -41,6 +45,9 @@ pub trait DeltaList {
         val2bits(self.get(index))
     }
 
+    /// Es ist nur dann aktiviert, wenn das Programm mit dem folgenden Feature kompiliert ist.
+    /// 
+    /// Ansonst wird die Anzahl der geschriebenen Elementen nicht gezählt.
     #[cfg(feature = "written_count")]
     fn written(&self) -> usize;
 }
@@ -173,6 +180,9 @@ impl DeltaList for HashMapLazyDeltaList {
     }
 }
 
+/// Eine Brücke zwischen einem AsyncDeltaList und einem DeltaList (Nimmt eine AsyncDeltaList und stellt die als eine Sync-DeltaList vor)
+/// 
+/// Die Struktur wird dafür benutzt, um die Implementation der parallen und nicht-parallelen Algorithmen zu verallgemeinern
 pub struct AsyncDeltaListAccessor<'a, T> {
     pub list: &'a T,
 }

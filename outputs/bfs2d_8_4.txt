@@ -1,20 +1,20 @@
 valid: true
 valid: true
-2d-BFS time elapsed: 1.4761ms
+2d-BFS time elapsed: 1.2864ms
 v>vvv>v>vvvvvv>>>>>>>>v>>^>v>v<vvvvv>v>vv>vv>>v>>v>>vv>v>vv>vvv>vvvv<vvv>>v<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvv<v<v<vvvvv<<vv>v>v<vvvv<vvv<v<vv>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>^^^>>>^>^>>>vv>v>>^>>v>>>v>>^^>>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>^>>>^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>>vvvvv>vv<vvv>vvv<vvv>v>vvvv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>vvv>>vv>v>>v>v>vv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>vv>>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v
 Instructions: 699
 valid: true
 valid: true
-2d-BFS time elapsed: 1.3275ms
+2d-BFS time elapsed: 1.5254ms
 v>vvv>v>vvvvvv>>>>>>>>v>>^>v>v<vvvvv>v>vv>vv>>v>>v>>vv>v>vv>vvv>vvvv<vvv>>v<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvv<v<v<vvvvv<<vv>v>v<vvvv<vvv<v<vv>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>^^^>>>^>^>>>vv>v>>^>>v>>>v>>^^>>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>^>>>^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>>vvvvv>vv<vvv>vvv<vvv>v>vvvv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>vvv>>vv>v>>v>v>vv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>vv>>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v
 Instructions: 699
 valid: true
 valid: true
-2d-BFS time elapsed: 1.2666ms
+2d-BFS time elapsed: 1.1622ms
 v>vvv>v>vvvvvv>>>>>>>>v>>^>v>v<vvvvv>v>vv>vv>>v>>v>>vv>v>vv>vvv>vvvv<vvv>>v<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvv<v<v<vvvvv<<vv>v>v<vvvv<vvv<v<vv>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>^^^>>>^>^>>>vv>v>>^>>v>>>v>>^^>>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>^>>>^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>>vvvvv>vv<vvv>vvv<vvv>v>vvvv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>vvv>>vv>v>>v>v>vv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>vv>>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v
 Instructions: 699
 valid: true
 valid: true
-2d-BFS time elapsed: 1.1891ms
+2d-BFS time elapsed: 1.1601ms
 v>vvv>v>vvvvvv>>>>>>>>v>>^>v>v<vvvvv>v>vv>vv>>v>>v>>vv>v>vv>vvv>vvvv<vvv>>v<v>vvvvv>>>>v>v>>>vv<v<vvvv<v>>vvv>>>^>vv>>vvv>v<vvvvv<v<<vv<v<<v<vv>vv>>>>v>vvv>>vvvv>>>>vv<vv>>>vvvvv>>^>vv>>>>>>>>>>vvvvv>v>>>vvv<v<v<vvvvv<<vv>v>v<vvvv<vvv<v<vv>>v>vvvvv>vv>vvvvvvvvv>vvv>>v>>v>>>^>>^^^>>>^>^>>>vv>v>>^>>v>>>v>>^^>>>>^^^>vv>>vv>>v>>v>>>v>>>^>>>v>^^^^^>>^>^>^>^>>v>^>>>^>>>>>>>^>>>>>>v>v>>v>v>vvvv>>>v>>>v>^>vv>>vvvvv>vv<vvv>vvv<vvv>v>vvvv>>>v>v>>>>v>>>v>v>v>v>>vv>v>>vvvvvvvv>>vv>v>v>v<v>vvv>vv>>>>v>>v>vv>>vvvvv>>>v>vv>>v>vvvvv>v>^>vvvvv>>>v>v>>>vv>vv>v>v>v>>v>vv>v>>>^>>vvv>>vv>v>>v>v>vv>>>>^^^^>vv>>>>>v>>>v>>>vvv>vv>>v>>>^^>vv>>vvv>vvv>>v>>^>>vvvv>vvv>>>>v>>v>vv<<vvvvv<vv>>vv>v>>v>vvvv<v>vvvvvvv>vv>v
 Instructions: 699

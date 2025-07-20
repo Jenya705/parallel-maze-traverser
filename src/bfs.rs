@@ -167,6 +167,7 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
     threads: usize,
     list: Arc<impl AsyncDeltaList + Sync + Send + 'static>,
 ) {
+    // SyncUnsafeCell wird dafür benutzt, um die Borrow-Regeln von Rust zu ignorieren.
     let mut thread_tasks = vec![];
     thread_tasks.resize_with(threads, || {
         SyncUnsafeCell::new(vec![[0 as Coordinate; 4]; 0])
@@ -235,8 +236,8 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
             );
 
             { 
+                // Main-Thread registriert dieses Worker-Thread hat seine Aufgabe erfüllt.
                 *notifier.0.lock().unwrap() = false;
-                // Main-Thread registriert dieses Worker-Thread has seine Aufgabe erfüllt.
                 notifier.1.notify_all();
             }
         });
@@ -267,7 +268,7 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
 
         let mut len = 0;
         for i in 0..threads {
-            // SAFETY: see worker thread explanation
+            // SAFETY: see the worker thread explanation
             let input = unsafe { thread_tasks[i].get().as_mut().unwrap() };
             let output = unsafe { thread_outputs[i].get().as_mut().unwrap() };
             std::mem::swap(input, output);
@@ -283,6 +284,7 @@ fn multi_threaded_bfs<const RESPECT_HOLES: bool>(
 
         let mut j = 0;
 
+        // Der Bilanzierungsalgorithmus
         for i in 0..threads {
             let input_i = unsafe { thread_tasks[i].get().as_mut().unwrap() };
             if input_i.len() >= avg_len {
@@ -361,7 +363,7 @@ pub unsafe fn handle_single_4d_state<const RESPECT_HOLES: bool>(
 ) {
     // Nimmt den neuen ohne Grubewirkung Zustand und
     // - guckt an, ob der Zustand in einer Grube ist
-    // - speichert den Zustand
+    // - speichert den Zustand bzw. die Zustände
     let mut handle_non_adjusted = |delta_i: u8, non_adjusted: [Coordinate; 4]| {
         if non_adjusted == state {
             return;
@@ -411,23 +413,23 @@ pub unsafe fn handle_single_4d_state<const RESPECT_HOLES: bool>(
 
     // Gibt es beim Gänger i eine Wand in diese Richtung?
     // Falls er schon am Ende ist, dann ist er von theoretischen Wänden blockiert. 
-    let left_wall_0 = (!maps[0].vertical_walls.contains_unchecked(i0v) && !state0end) as Coordinate;
-    let left_wall_1 = (!maps[1].vertical_walls.contains_unchecked(i1v) && !state1end) as Coordinate;
+    let left_wall_0 = (!state0end && !maps[0].vertical_walls.contains_unchecked(i0v)) as Coordinate;
+    let left_wall_1 = (!state1end && !maps[1].vertical_walls.contains_unchecked(i1v)) as Coordinate;
 
     let right_wall_0 =
-        (!maps[0].vertical_walls.contains_unchecked(i0v + 1) && !state0end) as Coordinate;
+        (!state0end && !maps[0].vertical_walls.contains_unchecked(i0v + 1)) as Coordinate;
     let right_wall_1 =
-        (!maps[1].vertical_walls.contains_unchecked(i1v + 1) && !state1end) as Coordinate;
+        (!state1end && !maps[1].vertical_walls.contains_unchecked(i1v + 1)) as Coordinate;
 
     let top_wall_0 =
-        (!maps[0].horizontal_walls.contains_unchecked(i0h) && !state0end) as Coordinate;
+        (!state0end && !maps[0].horizontal_walls.contains_unchecked(i0h)) as Coordinate;
     let top_wall_1 =
-        (!maps[1].horizontal_walls.contains_unchecked(i1h) && !state1end) as Coordinate;
+        (!state1end && !maps[1].horizontal_walls.contains_unchecked(i1h)) as Coordinate;
 
     let bottom_wall_0 =
-        (!maps[0].horizontal_walls.contains_unchecked(i0h + 1) && !state0end) as Coordinate;
+        (!state0end && !maps[0].horizontal_walls.contains_unchecked(i0h + 1)) as Coordinate;
     let bottom_wall_1 =
-        (!maps[1].horizontal_walls.contains_unchecked(i1h + 1) && !state1end) as Coordinate;
+        (!state1end && !maps[1].horizontal_walls.contains_unchecked(i1h + 1)) as Coordinate;
 
     // d = 1 & r = -1
     let delta_0 = [1 & left_wall_0, 1 & left_wall_1];
@@ -491,13 +493,17 @@ pub fn launch_bfs_2d<const RESPECT_HOLES: bool>(
     let mut list = BitSetDeltaList::<3>::inner_new(width_u * height_u);
 
     if bfs_2d::<RESPECT_HOLES>(&mut tasks, &mut output, [0; 2], &maps[0], &mut list) {
+        // wenn ein Weg gefunden wurde
         bfs_2d_reconstruction::<RESPECT_HOLES>(&list, &maps[0], [0; 2], &mut instructions);
         let mut start_state = [0; 2];
+        // simulieren die Instruktionen für den zweiten Gänger
         for &instruction in instructions.iter() {
-            apply_instruction::<RESPECT_HOLES>(instruction, &maps[1], &mut start_state, false);
+            apply_instruction::<RESPECT_HOLES>(instruction, &maps[1], &mut start_state, true);
         }
 
+        // falls er schon am Ende ist, dann muss nichts berechnet werden
         if start_state != [width - 1, height - 1] {
+            // das Bitset soll leer sein
             list.inner_clear();
             if bfs_2d::<RESPECT_HOLES>(&mut tasks, &mut output, start_state, &maps[1], &mut list) {
                 bfs_2d_reconstruction::<RESPECT_HOLES>(
@@ -507,6 +513,7 @@ pub fn launch_bfs_2d<const RESPECT_HOLES: bool>(
                     &mut instructions,
                 );
             } else {
+                // kein Weg wurde gefunden => markieren, dass keine Lösung existiert
                 instructions.clear();
             }
         }
@@ -527,7 +534,7 @@ pub fn bfs_2d<const RESPECT_HOLES: bool>(
     tasks.clear();
     output.clear();
 
-    // [x_dimension, direction, written]
+    // [x_dimension, direction, written] ist die Bitrepräsentation der Struktur, die im Bitset list gespeichert wird
 
     let width = map.width as usize;
 
@@ -629,6 +636,7 @@ pub fn bfs_2d_distances<const RESPECT_HOLES: bool, const DEFAULT_VALUE: usize>(
                 let visited_hole =
                     apply_instruction::<RESPECT_HOLES>(instruction, map, &mut state, false);
                 // if RESPECT_HOLES is false then visited_hole is always false (i.e. no need to check it in the runtime)
+                // wenn es keine Gruben gibt, dann konnte keine Grube besucht werden
                 if RESPECT_HOLES && visited_hole {
                     continue;
                 }

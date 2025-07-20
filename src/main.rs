@@ -43,11 +43,17 @@ impl InputData {
 }
 
 pub struct Map {
+    /// W_{1,i,x,y}
     horizontal_walls: FixedBitSet,
+    /// W_{2,i,x,y}
     vertical_walls: FixedBitSet,
+    /// H_{i,x,y}
     holes: FixedBitSet,
+    /// Positionen von den Gruben
     holes_placement: Vec<[Coordinate; 2]>,
+    /// w
     width: Coordinate,
+    /// h
     height: Coordinate,
 }
 
@@ -66,12 +72,14 @@ impl Map {
             height,
         };
 
+        // Rechten und linken Wände
         for y in 0..slf.height {
             slf.vertical_walls.insert(slf.vertical_wall_index(0, y));
             slf.vertical_walls
                 .insert(slf.vertical_wall_index(slf.width, y));
         }
 
+        // Oberen und unteren Wände
         for x in 0..slf.width {
             slf.horizontal_walls.insert(slf.horizontal_wall_index(x, 0));
             slf.horizontal_walls
@@ -102,33 +110,40 @@ impl Map {
         slf
     }
 
+    /// Index der Position im entsprechenden Bitset
     fn horizontal_wall_index(&self, x: Coordinate, y: Coordinate) -> usize {
         Self::horizontal_wall_index_with(x, y, self.height as usize)
     }
 
+    /// Index der Position im entsprechenden Bitset
     pub fn horizontal_wall_index_with(x: Coordinate, y: Coordinate, h: usize) -> usize {
         let (x, y) = (x as usize, y as usize);
         x * (h + 1) + y
     }
 
+    /// Index der Position im entsprechenden Bitset
     fn vertical_wall_index(&self, x: Coordinate, y: Coordinate) -> usize {
         Self::vertical_wall_index_with(x, y, self.width as usize)
     }
 
+    /// Index der Position im entsprechenden Bitset
     pub fn vertical_wall_index_with(x: Coordinate, y: Coordinate, w: usize) -> usize {
         let (x, y) = (x as usize, y as usize);
         y * (w + 1) + x
     }
 
+    /// Index der Position im entsprechenden Bitset bzw. in der entsprechenden Liste
     fn tile_index(&self, x: Coordinate, y: Coordinate) -> usize {
         Self::tile_index_with(x, y, self.width as _)
     }
 
+    /// Index der Position im entsprechenden Bitset bzw. in der entsprechenden Liste
     pub fn tile_index_with(x: Coordinate, y: Coordinate, w: usize) -> usize {
         let (x, y) = (x as usize, y as usize);
         w * y + x
     }
 
+    /// Index der Position im entsprechenden Bitset bzw. in der entsprechenden Liste
     pub fn tile_index_with_vec(pos: [Coordinate; 2], w: usize) -> usize {
         Self::tile_index_with(pos[0], pos[1], w)
     }
@@ -144,7 +159,6 @@ pub fn end_state(width: Coordinate, height: Coordinate) -> [Coordinate; 4] {
 
 /// Gibt den Index des Zustandes zurück
 pub fn calculate_visited_index(state: [Coordinate; 4], width: usize, tiles_count: usize) -> usize {
-    // dbg!(state);
     (state[1] as usize * width + state[0] as usize) * tiles_count
         + (state[3] as usize * width + state[2] as usize)
 }
@@ -187,16 +201,20 @@ enum OutputType {
 #[command(version, about, long_about = None)]
 struct App {
     #[arg(short, long, default_value_t = false)]
+    /// wenn true, dann werden alle Gruben ignoriert
     exclude_holes: bool,
     #[arg(short, long, value_enum, default_value_t = PathGenerator::BFSSTBS)]
     path_gen: PathGenerator,
     #[arg(short, long, value_enum, default_value_t = OutputType::Instructions)]
     output: OutputType,
     #[arg(short = 'u', long, default_value_t = false)]
+    /// Ob die Ausgabe mit den Unicode-Zeichnen wird
     unicode: bool,
     #[arg(short = 't', long, default_value_t = 4)]
+    /// Anzahl der Threads, falls der Algorithmus parallel ist
     threads: usize,
     #[arg(short = 'm', long, default_value_t = false)]
+    /// wenn true, dann nutzt der A* eine Hashtabelle zuerst
     memory_optimization: bool,
     #[arg()]
     input_file: String,
@@ -218,33 +236,31 @@ fn main() {
 
     let maps = Arc::new(maps);
 
-    macro_rules! launch_bfs {
-        ($kind: expr) => {
-            if respect_holes {
-                let mut callback = instructions::InstructionsOutputCallback::<true>::default();
-                bfs::launch_bfs::<true>(
-                    width,
-                    height,
-                    Arc::clone(&maps),
-                    app.threads,
-                    $kind,
-                    &mut callback,
-                );
-                (callback.instructions, callback.moves)
-            } else {
-                let mut callback = instructions::InstructionsOutputCallback::<false>::default();
-                bfs::launch_bfs::<false>(
-                    width,
-                    height,
-                    Arc::clone(&maps),
-                    app.threads,
-                    $kind,
-                    &mut callback,
-                );
-                (callback.instructions, callback.moves)
-            }
-        };
-    }
+    let launch_bfs = |kind: FourBitDeltaListKind| {
+        if respect_holes {
+            let mut callback = instructions::InstructionsOutputCallback::<true>::default();
+            bfs::launch_bfs::<true>(
+                width,
+                height,
+                Arc::clone(&maps),
+                app.threads,
+                kind,
+                &mut callback,
+            );
+            (callback.instructions, callback.moves)
+        } else {
+            let mut callback = instructions::InstructionsOutputCallback::<false>::default();
+            bfs::launch_bfs::<false>(
+                width,
+                height,
+                Arc::clone(&maps),
+                app.threads,
+                kind,
+                &mut callback,
+            );
+            (callback.instructions, callback.moves)
+        }
+    };
 
     macro_rules! launch_astar {
         ($queue: ty) => {
@@ -273,10 +289,10 @@ fn main() {
     }
 
     let (instructions, moves) = match app.path_gen {
-        PathGenerator::BFSMTCSBS => launch_bfs!(FourBitDeltaListKind::CompareAndSwapAtomicBitSet),
-        PathGenerator::BFSSTLHM => launch_bfs!(FourBitDeltaListKind::LazyHashMap),
-        PathGenerator::BFSMTABS => launch_bfs!(FourBitDeltaListKind::AtomicBitSet),
-        PathGenerator::BFSSTBS => launch_bfs!(FourBitDeltaListKind::BitSet),
+        PathGenerator::BFSMTCSBS => launch_bfs(FourBitDeltaListKind::CompareAndSwapAtomicBitSet),
+        PathGenerator::BFSSTLHM => launch_bfs(FourBitDeltaListKind::LazyHashMap),
+        PathGenerator::BFSMTABS => launch_bfs(FourBitDeltaListKind::AtomicBitSet),
+        PathGenerator::BFSSTBS => launch_bfs(FourBitDeltaListKind::BitSet),
         PathGenerator::ASMD => launch_astar!(ManhattanDistancePriorityQueue),
         PathGenerator::AS2DBFS => {
             if respect_holes {

@@ -7,6 +7,7 @@ use crate::{
     end_state, Coordinate, Map,
 };
 
+/// Eine Prioritätenschlange, die selbst entsheidet, was sie mit Zuständen macht.
 pub trait AStarPriorityQueue: Sized {
     fn new(width: usize, height: usize, maps: &[Map; 2]) -> Option<Self>;
 
@@ -20,6 +21,7 @@ struct GenericPriorityQueue<T> {
     heap: BinaryHeap<T>,
 }
 
+/// Entweder Reverse<usize> oder usize
 trait GenericPriorityQueueOrdContainer {
     fn into_usize(self) -> usize;
 
@@ -50,6 +52,7 @@ impl<T> GenericPriorityQueue<T>
 where
     T: GenericPriorityQueueOrdContainer,
     T: Clone,
+    // Vergleichoperationen
     T: Ord + PartialOrd + Eq + PartialEq,
 {
     pub fn new(indices: usize) -> Self {
@@ -156,6 +159,7 @@ impl<const RESPECT_HOLES: bool> AStarPriorityQueue
     fn new(width: usize, height: usize, maps: &[Map; 2]) -> Option<Self> {
         let mut distances = std::array::from_fn(|_| vec![usize::MAX; width * height]);
 
+        // Damit wird der maximale Index berechnet
         let mut max_dist_sum = 0;
 
         let mut tasks = vec![];
@@ -180,9 +184,11 @@ impl<const RESPECT_HOLES: bool> AStarPriorityQueue
             max_dist_sum += max_dist;
         }
 
+        // falls kein Weg in einem der Labyrinthe gefunden wurde
         if distances[0][0] == usize::MAX || distances[1][0] == usize::MAX {
             None
         } else {
+            // +1, weil max_dist_sum der maximale Index, also ist es um 1 Element mehr gebraucht
             Some(Self {
                 queue: GenericPriorityQueue::new(max_dist_sum + 1),
                 width,
@@ -243,8 +249,8 @@ pub fn launch_astar<Q: AStarPriorityQueue, const RESPECT_HOLES: bool>(
                     break false;
                 };
 
+                // SAFETY: len is always 0 and capacity is always 4
                 unsafe {
-                    // len is always 0 and capacity is always 4
                     handle_single_4d_state::<RESPECT_HOLES>(
                         maps,
                         width_u,
@@ -270,6 +276,7 @@ pub fn launch_astar<Q: AStarPriorityQueue, const RESPECT_HOLES: bool>(
 
         if let Some(mut list) = if use_hash_map_first {
             let mut list = HashMapLazyDeltaList::new(states_count);
+            // mit convert ist es gemeint, ob die Aufgabe weiter gelöst werden muss
             let convert = loop {
                 search!(list);
 

@@ -8,6 +8,7 @@ use crate::{
     Coordinate, Map,
 };
 
+/// Generiert eine DOT-Datei, die den Graphen von der BFS-Suche enthält.
 pub fn graph<const RESPECT_HOLES: bool>(
     width: Coordinate,
     height: Coordinate,

@@ -1,20 +1,20 @@
 valid: true
 valid: true
-2d-BFS time elapsed: 124.1µs
+2d-BFS time elapsed: 95.3µs
 >>vv>>>^^>>>v<v>vv<v<^<<<<^<<vvv>v>>>>vv>>^^>v>v<<<<vv>v<<v<v>v>v>^^^>^^>>>>>v<v<vv>>v
 Instructions: 86
 valid: true
 valid: true
-2d-BFS time elapsed: 72.4µs
+2d-BFS time elapsed: 83.2µs
 >>vv>>>^^>>>v<v>vv<v<^<<<<^<<vvv>v>>>>vv>>^^>v>v<<<<vv>v<<v<v>v>v>^^^>^^>>>>>v<v<vv>>v
 Instructions: 86
 valid: true
 valid: true
-2d-BFS time elapsed: 94.1µs
+2d-BFS time elapsed: 78.5µs
 >>vv>>>^^>>>v<v>vv<v<^<<<<^<<vvv>v>>>>vv>>^^>v>v<<<<vv>v<<v<v>v>v>^^^>^^>>>>>v<v<vv>>v
 Instructions: 86
 valid: true
 valid: true
-2d-BFS time elapsed: 76µs
+2d-BFS time elapsed: 93.8µs
 >>vv>>>^^>>>v<v>vv<v<^<<<<^<<vvv>v>>>>vv>>^^>v>v<<<<vv>v<<v<v>v>v>^^^>^^>>>>>v<v<vv>>v
 Instructions: 86

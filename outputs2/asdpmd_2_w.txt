@@ -1,6 +1,0 @@
-len: 10000
-written: 4896
-A* time elapsed: 527.7µs
-0 valid: true, 1 valid: true
->>vvv>>vv>^^>>v><<v>><<v>v>>v>^^^>^^>>><v>>>v<v>vv^>v<vv<v<^<^<<<<^<<vvv>v>>>>vv>>^<<^>v>>v
-Moves: 126, Instructions: 91

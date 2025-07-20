@@ -1,4 +1,0 @@
-len: 90000
-written: 49177
-BFS time elapsed: 2.6002ms
-No solution found.

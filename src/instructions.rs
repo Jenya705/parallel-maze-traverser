@@ -7,6 +7,7 @@ use crate::{
 pub const ALL_INSTRUCTIONS: [[bool; 2]; 4] =
     [[false, false], [true, false], [false, true], [true, true]];
 
+/// Gibt eine Menge der besuchenden Positionen eines Gängers zurück
 pub fn collect_positions2d<const RESPECT_HOLES: bool>(
     instructions: impl Iterator<Item = [bool; 2]>,
     map: &Map,
@@ -22,6 +23,7 @@ pub fn collect_positions2d<const RESPECT_HOLES: bool>(
     visited
 }
 
+/// Gibt eine geordnete Liste der besuchenden Zuständen zurück
 pub fn collect_positions4d<const RESPECT_HOLES: bool>(
     instructions: impl Iterator<Item = [bool; 2]>,
     maps: &[Map; 2],
@@ -38,6 +40,8 @@ pub fn collect_positions4d<const RESPECT_HOLES: bool>(
     visited
 }
 
+/// Wendet die gegebene Instruktion auf die gegebene Position an. Falls end_lock true ist, dann wird die Regel, dass
+/// ein Gänger am Ende bleibt, ignoriert.
 pub fn apply_instruction<const RESPECT_HOLES: bool>(
     instruction: [bool; 2],
     map: &Map,
@@ -73,6 +77,7 @@ pub fn apply_instruction<const RESPECT_HOLES: bool>(
     }
 }
 
+/// Wendet alle Instruktionen auf die gegebene Position an
 pub fn apply_instructions<const RESPECT_HOLES: bool>(
     dirs: impl Iterator<Item = [bool; 2]>,
     map: &Map,
@@ -83,8 +88,9 @@ pub fn apply_instructions<const RESPECT_HOLES: bool>(
     }
 }
 
+/// Gibt die maximale Anzahl der Instruktion in einer der optimalen Lösungen zurück
 pub fn maximum_instructions(maps: &[Map; 2]) -> usize {
-    2 * maps[0].width as usize * maps[1].height as usize
+    2 * maps[0].width as usize * maps[0].height as usize
         - 2
         - maps[0].holes_placement.len()
         - maps[1].holes_placement.len()
@@ -93,6 +99,9 @@ pub fn maximum_instructions(maps: &[Map; 2]) -> usize {
 #[derive(Default)]
 pub struct InstructionsOutputCallback<const RESPECT_HOLES: bool> {
     pub instructions: Vec<[bool; 2]>,
+    /// Anzahl der Bewegungen (nicht Instruktionen). Also falls
+    /// nur ein Gänger sich bei einer Instruktion bewegte, dann wird die
+    /// Zahl nur um 1 erhöht, sonst um 2.
     pub moves: usize,
 }
 
@@ -145,14 +154,18 @@ impl<const RESPECT_HOLES: bool> Callback for InstructionsOutputCallback<RESPECT_
 
             let mut delta = [0; 4];
 
+            // Richtung
             let r = if delta_i[3] { 1 } else { -1 };
 
+            // Achsen: wenn delta_i[2] true ist, dann werden die X-Achsen für die Gänger gewählt (sonst Y-Achsen)
             let i1 = if delta_i[2] { 0 } else { 1 };
             let i2 = if delta_i[2] { 2 } else { 3 };
 
+            // Falls der erste Gänger sich bewegte.
             if delta_i[0] {
                 delta[i1] = r;
             }
+            // Falls der zweite Gänger...
             if delta_i[1] {
                 delta[i2] = r;
             }
@@ -177,6 +190,7 @@ impl<const RESPECT_HOLES: bool> Callback for InstructionsOutputCallback<RESPECT_
             }
 
             for i in 0..4 {
+                // maximal 2 Zahlen in der Matrix sind nicht 0
                 if delta[i] != 0 {
                     self.moves += 1;
                 }
@@ -196,11 +210,7 @@ impl<const RESPECT_HOLES: bool> Callback for InstructionsOutputCallback<RESPECT_
         apply_instructions::<RESPECT_HOLES>(self.instructions.iter().cloned(), &maps[0], &mut s0);
         apply_instructions::<RESPECT_HOLES>(self.instructions.iter().cloned(), &maps[1], &mut s1);
 
-        // println!(
-        //     "{:?}",
-        //     collect_positions4d::<RESPECT_HOLES>(self.instructions.iter().cloned(), &maps, &mut [[0;2];2])
-        // );
-
+        // Überprüfen, dass die Instruktionen wirklich richtig sind.
         println!(
             "0 valid: {}, 1 valid: {}",
             s0 == [width as Coordinate - 1, height as Coordinate - 1],

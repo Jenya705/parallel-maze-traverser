@@ -1,12 +1,12 @@
 valid: true
-2d-BFS time elapsed: 101.3µs
+2d-BFS time elapsed: 104.3µs
 No solution found.
 valid: true
-2d-BFS time elapsed: 84.5µs
+2d-BFS time elapsed: 88µs
 No solution found.
 valid: true
-2d-BFS time elapsed: 78.6µs
+2d-BFS time elapsed: 81.7µs
 No solution found.
 valid: true
-2d-BFS time elapsed: 107.1µs
+2d-BFS time elapsed: 82.8µs
 No solution found.
